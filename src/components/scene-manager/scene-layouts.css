@@ -1,0 +1,101 @@
+/* ============================================================
+   Scene Transition & Layout Styles
+   ============================================================ */
+
+/* ── Scene wrapper with fade transition ── */
+
+.rl-scene-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.rl-scene-layer.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Splash scenes (Starting Soon / BRB / Ending) ── */
+
+.rl-splash-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(8, 12, 28, 0.6) 0%,
+    transparent 70%
+  );
+}
+
+.rl-splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: rl-splashReveal 0.8s ease-out both;
+}
+
+.rl-splash-title {
+  font-family: var(--rl-font-display);
+  font-size: 72px;
+  font-weight: 800;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  color: var(--rl-text-primary);
+  margin: 0;
+  text-align: center;
+}
+
+.rl-splash-subtitle {
+  font-family: var(--rl-font-body);
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--rl-text-muted);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.rl-splash-accent-line {
+  width: 200px;
+  height: 3px;
+  border-radius: 2px;
+  opacity: 0.8;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.rl-splash-countdown {
+  font-family: var(--rl-font-display);
+  font-size: 96px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  margin: 8px 0;
+  font-variant-numeric: tabular-nums;
+  animation: rl-countdownPulse 2s ease-in-out infinite;
+}
+
+@keyframes rl-splashReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes rl-countdownPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}

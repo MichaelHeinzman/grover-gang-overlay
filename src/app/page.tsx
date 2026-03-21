@@ -6,6 +6,10 @@ import {
   useTwitchConnection,
 } from "@four-leaf-studios/twitch-overlay";
 import { TWITCH_SCOPES, TWITCH_SUBSCRIPTIONS } from "@/lib/twitch-config";
+import {
+  setStreamStartTime,
+  clearStreamStartTime,
+} from "@/components/scene-manager/useCountdown";
 import { useState, useEffect, useCallback } from "react";
 
 const CLIENT_ID_KEY = "grover_gang_client_id";
@@ -104,9 +108,25 @@ function DashboardContent() {
   const [scanning, setScanning] = useState(false);
   const [scanError, setScanError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [startHour, setStartHour] = useState("7");
+  const [startMinute, setStartMinute] = useState("00");
+  const [startPeriod, setStartPeriod] = useState<"PM" | "AM">("PM");
+  const [startTimeSet, setStartTimeSet] = useState(false);
 
   useEffect(() => {
     setCameraLabel(localStorage.getItem(CAMERA_LABEL_KEY) ?? "");
+    // Load any previously saved start time
+    const saved = localStorage.getItem("grover_gang_stream_start") ?? "";
+    if (saved) {
+      const d = new Date(saved);
+      if (!isNaN(d.getTime())) {
+        const h = d.getHours();
+        setStartHour(String(h === 0 ? 12 : h > 12 ? h - 12 : h));
+        setStartMinute(String(d.getMinutes()).padStart(2, "0"));
+        setStartPeriod(h >= 12 ? "PM" : "AM");
+        setStartTimeSet(true);
+      }
+    }
   }, []);
 
   const overlayUrl =
@@ -283,11 +303,178 @@ function DashboardContent() {
         </button>
       )}
 
+      {/* Stream Countdown */}
+      {token && (
+        <div
+          style={{
+            marginTop: 24,
+            padding: "18px",
+            borderRadius: 8,
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
+            Stream Countdown
+          </h2>
+          <p style={{ color: "#888", fontSize: 13, marginBottom: 14 }}>
+            Set a start time for the &quot;Starting Soon&quot; countdown.
+            Updates the overlay in real-time.
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: 6,
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <select
+              value={startHour}
+              onChange={(e) => {
+                setStartHour(e.target.value);
+                setStartTimeSet(false);
+              }}
+              style={{
+                padding: "10px 8px",
+                borderRadius: 6,
+                border: "1px solid rgba(255,255,255,0.2)",
+                background: "rgba(30,30,30,0.9)",
+                color: "#fff",
+                fontSize: 14,
+                outline: "none",
+              }}
+            >
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                <option key={h} value={String(h)}>
+                  {h}
+                </option>
+              ))}
+            </select>
+            <span style={{ color: "#888", fontSize: 18, fontWeight: 700 }}>
+              :
+            </span>
+            <select
+              value={startMinute}
+              onChange={(e) => {
+                setStartMinute(e.target.value);
+                setStartTimeSet(false);
+              }}
+              style={{
+                padding: "10px 8px",
+                borderRadius: 6,
+                border: "1px solid rgba(255,255,255,0.2)",
+                background: "rgba(30,30,30,0.9)",
+                color: "#fff",
+                fontSize: 14,
+                outline: "none",
+              }}
+            >
+              {[
+                "00",
+                "05",
+                "10",
+                "15",
+                "20",
+                "25",
+                "30",
+                "35",
+                "40",
+                "45",
+                "50",
+                "55",
+              ].map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+            <select
+              value={startPeriod}
+              onChange={(e) => {
+                setStartPeriod(e.target.value as "AM" | "PM");
+                setStartTimeSet(false);
+              }}
+              style={{
+                padding: "10px 8px",
+                borderRadius: 6,
+                border: "1px solid rgba(255,255,255,0.2)",
+                background: "rgba(30,30,30,0.9)",
+                color: "#fff",
+                fontSize: 14,
+                outline: "none",
+              }}
+            >
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+            <button
+              onClick={() => {
+                let h = parseInt(startHour, 10);
+                if (startPeriod === "PM" && h !== 12) h += 12;
+                if (startPeriod === "AM" && h === 12) h = 0;
+                const now = new Date();
+                const target = new Date(
+                  now.getFullYear(),
+                  now.getMonth(),
+                  now.getDate(),
+                  h,
+                  parseInt(startMinute, 10),
+                  0,
+                );
+                // If the time already passed today, assume tomorrow
+                if (target.getTime() <= Date.now()) {
+                  target.setDate(target.getDate() + 1);
+                }
+                setStreamStartTime(target.toISOString());
+                setStartTimeSet(true);
+              }}
+              disabled={startTimeSet}
+              style={{
+                padding: "10px 16px",
+                borderRadius: 6,
+                border: "none",
+                background: startTimeSet ? "rgba(0,229,160,0.15)" : "#00aaff",
+                color: startTimeSet ? "#00e5a0" : "#fff",
+                cursor: startTimeSet ? "not-allowed" : "pointer",
+                fontSize: 13,
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {startTimeSet ? "Set!" : "Set Time"}
+            </button>
+            <button
+              onClick={() => {
+                clearStreamStartTime();
+                setStartHour("7");
+                setStartMinute("00");
+                setStartPeriod("PM");
+                setStartTimeSet(false);
+              }}
+              style={{
+                padding: "10px 16px",
+                borderRadius: 6,
+                border: "1px solid rgba(255,255,255,0.2)",
+                background: "transparent",
+                color: "#ff4500",
+                cursor: "pointer",
+                fontSize: 13,
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* OBS Instructions */}
       {token && (
         <div
           style={{
-            marginTop: 40,
+            marginTop: 24,
             padding: "18px",
             borderRadius: 8,
             background: "rgba(255,255,255,0.03)",

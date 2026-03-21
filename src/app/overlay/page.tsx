@@ -10,10 +10,26 @@ import { AlertBox } from "@/components/alert-box/AlertBox";
 import { ChatBox } from "@/components/chat-box/ChatBox";
 import { WebcamFrame } from "@/components/webcam-frame/WebcamFrame";
 import { useAlertQueue } from "@/components/use-alert-queue/useAlertQueue";
+import { useSceneManager } from "@/components/scene-manager/useSceneManager";
+import { SplashScene } from "@/components/scene-manager/SplashScene";
+import { useCountdown } from "@/components/scene-manager/useCountdown";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 const CLIENT_ID_KEY = "grover_gang_client_id";
+
+/** Wrapper that fades scene layers in/out */
+function SceneLayer({
+  active,
+  children,
+}: {
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={`rl-scene-layer${active ? " active" : ""}`}>{children}</div>
+  );
+}
 
 function OverlayContent({
   cameraLabel,
@@ -23,27 +39,67 @@ function OverlayContent({
   username?: string;
 }) {
   const { alerts, push } = useAlertQueue();
+  const { activeScene } = useSceneManager();
+  const countdown = useCountdown();
 
   return (
     <TwitchOverlay>
+      {/* Alert listeners run in all scenes */}
       <AlertListeners push={push} />
 
-      {/* Scene edge decorations */}
-      <div className="rl-scene-edge-top" />
-      <div className="rl-scene-edge-bottom" />
+      {/* ── Scene 1: Starting Soon ── */}
+      <SceneLayer active={activeScene === "starting-soon"}>
+        <SplashScene
+          title="Starting Soon"
+          subtitle="Hang tight..."
+          countdown={countdown}
+          accentColor="var(--rl-blue)"
+        />
+      </SceneLayer>
 
-      {/* Alert stack — top-right */}
-      <div className="rl-alert-stack">
-        {alerts.map((alert) => (
-          <AlertBox key={alert.id} alert={alert} />
-        ))}
-      </div>
+      {/* ── Scene 2: Gameplay (default) ── */}
+      <SceneLayer active={activeScene === "gameplay"}>
+        <div className="rl-scene-edge-top" />
+        <div className="rl-scene-edge-bottom" />
 
-      {/* Chat — bottom-right */}
-      <ChatBox />
+        <div className="rl-alert-stack">
+          {alerts.map((alert) => (
+            <AlertBox key={alert.id} alert={alert} />
+          ))}
+        </div>
 
-      {/* Webcam — bottom-left */}
-      <WebcamFrame cameraLabel={cameraLabel} username={username} />
+        <ChatBox />
+        <WebcamFrame cameraLabel={cameraLabel} username={username} />
+      </SceneLayer>
+
+      {/* ── Scene 3: Just Chatting ── */}
+      <SceneLayer active={activeScene === "just-chatting"}>
+        <div className="rl-scene-edge-top" />
+        <div className="rl-scene-edge-bottom" />
+
+        <div className="rl-alert-stack">
+          {alerts.map((alert) => (
+            <AlertBox key={alert.id} alert={alert} />
+          ))}
+        </div>
+
+        <ChatBox />
+        <WebcamFrame cameraLabel={cameraLabel} username={username} />
+      </SceneLayer>
+
+      {/* ── Scene 4: BRB ── */}
+      <SceneLayer active={activeScene === "brb"}>
+        <SplashScene title="Be Right Back" accentColor="var(--rl-orange)" />
+      </SceneLayer>
+
+      {/* ── Scene 5: Ending ── */}
+      <SceneLayer active={activeScene === "ending"}>
+        <SplashScene
+          title="Thanks for Watching"
+          subtitle="See you next time!"
+          accentColor="var(--rl-gold)"
+        />
+      </SceneLayer>
     </TwitchOverlay>
   );
 }
