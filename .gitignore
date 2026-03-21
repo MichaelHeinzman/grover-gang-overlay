@@ -38,4 +38,7 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# overlay config (contains access tokens)
+/.data/
 next-env.d.ts

@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useTwitchEvent } from "@four-leaf-studios/twitch-overlay";
-import type { AlertItem } from "./useAlertQueue";
+import type { AlertItem } from "../use-alert-queue/useAlertQueue";
 
 const TIER_NAMES: Record<string, string> = {
   "1000": "Tier 1",
@@ -24,7 +24,7 @@ export function AlertListeners({
           title: "New Teammate",
           message: `${event.user_name} joined the squad!`,
           color: "#00AAFF",
-          icon: "🏎️",
+          icon: "\ud83c\udfce\ufe0f",
         });
       },
       [push],
@@ -41,7 +41,7 @@ export function AlertListeners({
           title: "Ranked Up",
           message: `${event.user_name} subscribed (${tier})!`,
           color: "#FF8C00",
-          icon: "🏆",
+          icon: "\ud83c\udfc6",
         });
       },
       [push],
@@ -58,7 +58,7 @@ export function AlertListeners({
           title: "Gift Drop",
           message: `${event.user_name} gifted ${total} sub${total > 1 ? "s" : ""}!`,
           color: "#00E5FF",
-          icon: "🎁",
+          icon: "\ud83c\udf81",
         });
       },
       [push],
@@ -74,7 +74,7 @@ export function AlertListeners({
           title: "Boost Pad",
           message: `${event.user_name} cheered ${event.bits} bits!`,
           color: "#FFD700",
-          icon: "⚡",
+          icon: "\u26a1",
         });
       },
       [push],
@@ -90,7 +90,7 @@ export function AlertListeners({
           title: "Demolition!",
           message: `${event.from_broadcaster_user_name} raided with ${event.viewers} viewers!`,
           color: "#FF4500",
-          icon: "💥",
+          icon: "\ud83d\udca5",
         });
       },
       [push],
@@ -107,7 +107,7 @@ export function AlertListeners({
           title: "Item Drop",
           message: `${event.user_name} redeemed "${reward.title}" (${reward.cost} pts)`,
           color: "#00FF88",
-          icon: "🎯",
+          icon: "\ud83c\udfaf",
         });
       },
       [push],

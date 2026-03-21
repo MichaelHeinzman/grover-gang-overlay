@@ -5,32 +5,35 @@ import {
   TwitchOverlay,
 } from "@four-leaf-studios/twitch-overlay";
 import { TWITCH_SCOPES, TWITCH_SUBSCRIPTIONS } from "@/lib/twitch-config";
-import { AlertListeners } from "@/components/AlertListeners";
-import { AlertBox } from "@/components/AlertBox";
-import { ChatBox } from "@/components/ChatBox";
-import { useAlertQueue } from "@/components/useAlertQueue";
-import { useState, useEffect } from "react";
+import { AlertListeners } from "@/components/alert-listeners/AlertListeners";
+import { AlertBox } from "@/components/alert-box/AlertBox";
+import { ChatBox } from "@/components/chat-box/ChatBox";
+import { WebcamFrame } from "@/components/webcam-frame/WebcamFrame";
+import { useAlertQueue } from "@/components/use-alert-queue/useAlertQueue";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
 const CLIENT_ID_KEY = "grover_gang_client_id";
 
-function OverlayContent() {
+function OverlayContent({
+  cameraLabel,
+  username,
+}: {
+  cameraLabel?: string;
+  username?: string;
+}) {
   const { alerts, push } = useAlertQueue();
 
   return (
     <TwitchOverlay>
       <AlertListeners push={push} />
 
+      {/* Scene edge decorations */}
+      <div className="rl-scene-edge-top" />
+      <div className="rl-scene-edge-bottom" />
+
       {/* Alert stack — top-right */}
-      <div
-        style={{
-          position: "absolute",
-          top: "40px",
-          right: "40px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-        }}
-      >
+      <div className="rl-alert-stack">
         {alerts.map((alert) => (
           <AlertBox key={alert.id} alert={alert} />
         ))}
@@ -38,13 +41,28 @@ function OverlayContent() {
 
       {/* Chat — bottom-right */}
       <ChatBox />
+
+      {/* Webcam — bottom-left */}
+      <WebcamFrame cameraLabel={cameraLabel} username={username} />
     </TwitchOverlay>
   );
 }
 
 export default function OverlayPage() {
+  return (
+    <Suspense>
+      <OverlayInner />
+    </Suspense>
+  );
+}
+
+function OverlayInner() {
+  const searchParams = useSearchParams();
   const [clientId, setClientId] = useState("");
   const [mounted, setMounted] = useState(false);
+
+  const cameraLabel = searchParams.get("cam") ?? undefined;
+  const username = searchParams.get("user") ?? undefined;
 
   useEffect(() => {
     setMounted(true);
@@ -71,7 +89,7 @@ export default function OverlayPage() {
       scopes={TWITCH_SCOPES}
       subscriptions={TWITCH_SUBSCRIPTIONS}
     >
-      <OverlayContent />
+      <OverlayContent cameraLabel={cameraLabel} username={username} />
     </TwitchProvider>
   );
 }
