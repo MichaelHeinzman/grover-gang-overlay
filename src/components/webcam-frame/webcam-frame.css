@@ -1,0 +1,303 @@
+/* ── WebcamFrame (9:16 portrait) ──────────────────────────── */
+
+.rl-webcam {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+  animation: rl-webcamReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  aspect-ratio: var(--rl-webcam-aspect-ratio);
+  width: var(--rl-webcam-width);
+}
+
+.rl-webcam__frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--rl-clip-size)) 0,
+    100% var(--rl-clip-size),
+    100% 100%,
+    var(--rl-clip-size) 100%,
+    0 calc(100% - var(--rl-clip-size))
+  );
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--rl-blue) 25%, transparent) 0%,
+    color-mix(in srgb, var(--rl-orange) 20%, transparent) 100%
+  );
+  padding: 3px;
+  animation: rl-webcamBorderPulse 3s ease-in-out infinite;
+}
+
+.rl-webcam__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 13px) 0,
+    100% 13px,
+    100% 100%,
+    13px 100%,
+    0 calc(100% - 13px)
+  );
+  background: #000;
+  overflow: hidden;
+}
+
+.rl-webcam__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: none;
+}
+
+.rl-webcam__no-signal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--rl-font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--rl-text-muted);
+  text-transform: uppercase;
+  animation: rl-noSignalFlicker 2s ease-in-out infinite;
+}
+
+/* ── Animated corner borders ── */
+
+.rl-webcam__accent-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(
+    90deg,
+    var(--rl-glow-blue),
+    var(--rl-cyan),
+    transparent
+  );
+  animation: rl-webcamAccentExpand 0.8s ease-out 0.5s forwards;
+  filter: drop-shadow(0 0 4px var(--rl-glow-blue));
+}
+
+.rl-webcam__accent-bottom {
+  position: absolute;
+  bottom: 0;
+  right: var(--rl-clip-size);
+  height: 2px;
+  width: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--rl-orange),
+    var(--rl-glow-orange)
+  );
+  animation: rl-webcamAccentExpand 0.8s ease-out 0.7s forwards;
+  filter: drop-shadow(0 0 4px var(--rl-glow-orange));
+}
+
+.rl-webcam__accent-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 0;
+  background: linear-gradient(
+    180deg,
+    var(--rl-glow-blue),
+    var(--rl-cyan),
+    transparent
+  );
+  animation: rl-webcamSideExpand 0.6s ease-out 0.8s forwards;
+  filter: drop-shadow(0 0 4px var(--rl-glow-blue));
+}
+
+.rl-webcam__accent-right {
+  position: absolute;
+  bottom: var(--rl-clip-size);
+  right: 0;
+  width: 2px;
+  height: 0;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--rl-orange),
+    var(--rl-glow-orange)
+  );
+  animation: rl-webcamSideExpand 0.6s ease-out 1s forwards;
+  filter: drop-shadow(0 0 4px var(--rl-glow-orange));
+}
+
+/* ── Animated scanning beam ── */
+
+.rl-webcam__scanline {
+  position: absolute;
+  inset: 2px;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    var(--rl-scanline) 2px,
+    var(--rl-scanline) 4px
+  );
+  pointer-events: none;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 13px) 0,
+    100% 13px,
+    100% 100%,
+    13px 100%,
+    0 calc(100% - 13px)
+  );
+}
+
+.rl-webcam__scanline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--rl-blue) 20%, transparent),
+    transparent
+  );
+  animation: rl-webcamScanBeam 4s linear infinite;
+}
+
+/* ── Username tag ── */
+
+.rl-webcam__username {
+  position: absolute;
+  bottom: -26px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--rl-font-display);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--rl-text-primary);
+  text-shadow:
+    0 0 10px var(--rl-glow-blue),
+    0 0 20px var(--rl-glow-blue-soft),
+    0 2px 4px rgba(0, 0, 0, 0.8);
+  animation:
+    rl-usernameReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) 1.2s both,
+    rl-usernameGlow 3s ease-in-out 2s infinite;
+}
+
+/* ── Small label below username ── */
+
+.rl-webcam__label {
+  position: absolute;
+  bottom: -38px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--rl-font-display);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--rl-text-muted);
+  text-shadow: 0 0 6px var(--rl-glow-blue-soft);
+  animation: rl-fadeIn 0.5s ease-out 1.4s both;
+}
+
+/* ── Webcam-specific keyframes ── */
+
+@keyframes rl-webcamBorderPulse {
+  0%,
+  100% {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--rl-blue) 40%, transparent) 0%,
+      color-mix(in srgb, var(--rl-orange) 20%, transparent) 100%
+    );
+    filter: drop-shadow(0 0 10px var(--rl-glow-blue));
+  }
+  50% {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--rl-blue) 20%, transparent) 0%,
+      color-mix(in srgb, var(--rl-orange) 45%, transparent) 100%
+    );
+    filter: drop-shadow(0 0 16px var(--rl-glow-orange));
+  }
+}
+
+@keyframes rl-webcamAccentExpand {
+  from {
+    width: 0;
+  }
+  to {
+    width: 120px;
+  }
+}
+
+@keyframes rl-webcamSideExpand {
+  from {
+    height: 0;
+  }
+  to {
+    height: 100px;
+  }
+}
+
+@keyframes rl-webcamScanBeam {
+  0% {
+    top: -3px;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+@keyframes rl-noSignalFlicker {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes rl-usernameReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scaleX(0.6);
+    letter-spacing: 12px;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleX(1);
+    letter-spacing: 4px;
+  }
+}
+
+@keyframes rl-usernameGlow {
+  0%,
+  100% {
+    text-shadow:
+      0 0 10px var(--rl-glow-blue),
+      0 0 20px var(--rl-glow-blue-soft),
+      0 2px 4px rgba(0, 0, 0, 0.8);
+  }
+  50% {
+    text-shadow:
+      0 0 14px var(--rl-glow-orange),
+      0 0 28px var(--rl-glow-orange-soft),
+      0 2px 4px rgba(0, 0, 0, 0.8);
+  }
+}

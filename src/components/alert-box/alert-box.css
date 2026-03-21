@@ -1,0 +1,306 @@
+/* ── AlertBox ────────────────────────────────────────────── */
+
+.rl-alert {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 22px 14px 18px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+  background: linear-gradient(
+    135deg,
+    var(--rl-panel-bg-start) 0%,
+    var(--rl-panel-bg-end) 100%
+  );
+  color: #fff;
+  font-size: 16px;
+  font-family: var(--rl-font-body);
+  min-width: 340px;
+  max-width: 460px;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--rl-clip-size-lg)) 0,
+    100% var(--rl-clip-size-lg),
+    100% 100%,
+    var(--rl-clip-size-lg) 100%,
+    0 calc(100% - var(--rl-clip-size-lg))
+  );
+  backdrop-filter: blur(12px);
+  border-left: 3px solid var(--_alert-color, var(--rl-blue));
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--_alert-color, var(--rl-blue)) 33%, transparent);
+  box-shadow:
+    0 0 25px
+      color-mix(in srgb, var(--_alert-color, var(--rl-blue)) 27%, transparent),
+    0 4px 30px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+/* ── Entry animation: dramatic scale + flash ── */
+
+.rl-alert--entering {
+  animation:
+    rl-alertSlam 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+    rl-alertGlow 2s ease-in-out 0.5s infinite;
+}
+
+/* ── Exit animation: slide + shrink ── */
+
+.rl-alert--exiting {
+  animation: rl-alertExit 0.35s ease-in forwards;
+}
+
+/* ── Animated top accent border ── */
+
+.rl-alert__accent-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(
+    90deg,
+    var(--_alert-color, var(--rl-blue)),
+    color-mix(in srgb, var(--_alert-color, var(--rl-blue)) 60%, white),
+    transparent
+  );
+  animation: rl-alertAccentSweep 0.6s ease-out 0.15s forwards;
+  filter: drop-shadow(0 0 4px var(--_alert-color, var(--rl-blue)));
+}
+
+/* ── Bottom accent border ── */
+
+.rl-alert::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: var(--rl-clip-size-lg);
+  height: 1px;
+  width: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--_alert-color, var(--rl-blue)) 40%, transparent)
+  );
+  animation: rl-alertAccentSweepReverse 0.5s ease-out 0.3s forwards;
+}
+
+/* ── Right side accent ── */
+
+.rl-alert::before {
+  content: "";
+  position: absolute;
+  top: var(--rl-clip-size-lg);
+  right: 0;
+  width: 2px;
+  height: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--_alert-color, var(--rl-blue)) 50%, transparent),
+    transparent
+  );
+  animation: rl-alertSideExpand 0.4s ease-out 0.2s forwards;
+  filter: drop-shadow(0 0 3px var(--_alert-color, var(--rl-blue)));
+}
+
+.rl-alert__scanline {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    var(--rl-scanline) 2px,
+    var(--rl-scanline) 4px
+  );
+  pointer-events: none;
+}
+
+/* ── Horizontal energy sweep ── */
+
+.rl-alert__scanline::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--_alert-color, var(--rl-blue)) 8%, transparent),
+    transparent
+  );
+  animation: rl-alertEnergySweep 1.5s ease-out 0.3s forwards;
+}
+
+.rl-alert__icon {
+  font-size: 30px;
+  flex-shrink: 0;
+  filter: drop-shadow(
+    0 0 8px
+      color-mix(in srgb, var(--_alert-color, var(--rl-blue)) 60%, transparent)
+  );
+  animation: rl-alertIconPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+}
+
+.rl-alert__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.rl-alert__title {
+  font-family: var(--rl-font-display);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--_alert-color, var(--rl-blue));
+  margin-bottom: 3px;
+  text-shadow: 0 0 10px
+    color-mix(in srgb, var(--_alert-color, var(--rl-blue)) 40%, transparent);
+  animation: rl-alertTitleReveal 0.4s ease-out 0.2s both;
+}
+
+.rl-alert__message {
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--rl-text-primary);
+  animation: rl-alertMsgReveal 0.4s ease-out 0.3s both;
+}
+
+/* ── Alert-specific keyframes ── */
+
+@keyframes rl-alertSlam {
+  0% {
+    transform: translateX(80px) scaleX(0.7);
+    opacity: 0;
+    filter: brightness(3);
+  }
+  30% {
+    transform: translateX(-8px) scaleX(1.05);
+    opacity: 1;
+    filter: brightness(1.8);
+  }
+  60% {
+    transform: translateX(4px) scaleX(0.98);
+    filter: brightness(1.2);
+  }
+  100% {
+    transform: translateX(0) scaleX(1);
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+@keyframes rl-alertExit {
+  0% {
+    transform: translateX(0) scaleY(1);
+    opacity: 1;
+  }
+  40% {
+    transform: translateX(-10px) scaleY(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(100px) scaleY(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes rl-alertGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 15px
+        color-mix(in srgb, var(--_alert-color, var(--rl-blue)) 20%, transparent),
+      0 4px 30px rgba(0, 0, 0, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 30px
+        color-mix(in srgb, var(--_alert-color, var(--rl-blue)) 35%, transparent),
+      0 4px 30px rgba(0, 0, 0, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    border-left-color: color-mix(
+      in srgb,
+      var(--_alert-color, var(--rl-blue)) 80%,
+      white
+    );
+  }
+}
+
+@keyframes rl-alertAccentSweep {
+  from {
+    width: 0;
+  }
+  to {
+    width: calc(100% - var(--rl-clip-size-lg));
+  }
+}
+
+@keyframes rl-alertAccentSweepReverse {
+  from {
+    width: 0;
+  }
+  to {
+    width: 60%;
+  }
+}
+
+@keyframes rl-alertSideExpand {
+  from {
+    height: 0;
+  }
+  to {
+    height: 40px;
+  }
+}
+
+@keyframes rl-alertEnergySweep {
+  from {
+    left: -100%;
+  }
+  to {
+    left: 200%;
+  }
+}
+
+@keyframes rl-alertIconPop {
+  from {
+    transform: scale(0) rotate(-20deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes rl-alertTitleReveal {
+  from {
+    opacity: 0;
+    letter-spacing: 8px;
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 2px;
+  }
+}
+
+@keyframes rl-alertMsgReveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

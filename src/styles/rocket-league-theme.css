@@ -1,0 +1,302 @@
+/* ============================================================
+   Rocket League Overlay Theme
+   ============================================================
+   All theme colors are defined here as CSS custom properties.
+   Change these values to re-skin the entire overlay.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap");
+
+:root {
+  /* ── Primary palette ── */
+  --rl-blue: #00aaff;
+  --rl-orange: #ff8c00;
+  --rl-gold: #ffd700;
+  --rl-cyan: #00e5ff;
+  --rl-red: #ff4500;
+  --rl-green: #00ff88;
+
+  /* ── Alert colors ── */
+  --rl-alert-follow: var(--rl-blue);
+  --rl-alert-sub: var(--rl-orange);
+  --rl-alert-gift: var(--rl-cyan);
+  --rl-alert-cheer: var(--rl-gold);
+  --rl-alert-raid: var(--rl-red);
+  --rl-alert-redeem: var(--rl-green);
+
+  /* ── Surfaces ── */
+  --rl-panel-bg-start: rgba(8, 12, 28, 0.92);
+  --rl-panel-bg-end: rgba(12, 18, 40, 0.85);
+  --rl-panel-border: rgba(0, 170, 255, 0.2);
+
+  /* ── Text ── */
+  --rl-text-primary: rgba(220, 230, 255, 0.95);
+  --rl-text-secondary: rgba(200, 215, 240, 0.9);
+  --rl-text-muted: rgba(0, 200, 255, 0.5);
+  --rl-text-separator: rgba(100, 180, 255, 0.35);
+
+  /* ── Glow / FX ── */
+  --rl-glow-blue: rgba(0, 170, 255, 0.6);
+  --rl-glow-orange: rgba(255, 140, 0, 0.6);
+  --rl-glow-blue-soft: rgba(0, 170, 255, 0.3);
+  --rl-glow-orange-soft: rgba(255, 140, 0, 0.3);
+  --rl-scanline: rgba(255, 255, 255, 0.015);
+
+  /* ── Fonts ── */
+  --rl-font-display: "Orbitron", sans-serif;
+  --rl-font-body: "Rajdhani", sans-serif;
+
+  /* ── Webcam (9:16 portrait) ── */
+  --rl-webcam-aspect-ratio: 9 / 16;
+  --rl-webcam-width: 250px;
+
+  /* ── Corner clip size ── */
+  --rl-clip-size: 14px;
+  --rl-clip-size-lg: 16px;
+}
+
+/* ============================================================
+   Animations
+   ============================================================ */
+
+@keyframes rl-slideInRight {
+  from {
+    transform: translateX(60px) skewX(-2deg);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) skewX(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes rl-slideOutRight {
+  from {
+    transform: translateX(0) skewX(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(60px) skewX(2deg);
+    opacity: 0;
+  }
+}
+
+@keyframes rl-goalExplosion {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+    filter: brightness(2);
+  }
+  40% {
+    transform: scale(1.08);
+    opacity: 1;
+    filter: brightness(1.5);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+@keyframes rl-boostPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 8px var(--rl-glow-orange-soft),
+      inset 0 0 8px rgba(255, 165, 0, 0.05);
+  }
+  50% {
+    box-shadow:
+      0 0 20px var(--rl-glow-orange),
+      inset 0 0 15px rgba(255, 165, 0, 0.1);
+  }
+}
+
+@keyframes rl-borderGlow {
+  0%,
+  100% {
+    border-color: rgba(0, 170, 255, 0.4);
+  }
+  50% {
+    border-color: rgba(255, 140, 0, 0.6);
+  }
+}
+
+@keyframes rl-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rl-webcamReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes rl-chatSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rl-accentSweep {
+  from {
+    width: 0;
+  }
+  to {
+    width: 80px;
+  }
+}
+
+@keyframes rl-messageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================================
+   Overlay Root
+   ============================================================ */
+
+.rl-overlay-root {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: transparent;
+  position: relative;
+}
+
+/* ── Animated corner brackets ── */
+
+.rl-overlay-root::before,
+.rl-overlay-root::after {
+  content: "";
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.rl-overlay-root::before {
+  top: 20px;
+  left: 20px;
+  border-top: 2px solid var(--rl-glow-blue);
+  border-left: 2px solid var(--rl-glow-blue);
+  filter: drop-shadow(0 0 6px var(--rl-glow-blue));
+  animation:
+    rl-sceneCornerFadeIn 0.8s ease-out 0.2s both,
+    rl-sceneCornerPulse 4s ease-in-out 1s infinite;
+}
+
+.rl-overlay-root::after {
+  bottom: 20px;
+  right: 20px;
+  border-bottom: 2px solid var(--rl-glow-orange);
+  border-right: 2px solid var(--rl-glow-orange);
+  filter: drop-shadow(0 0 6px var(--rl-glow-orange));
+  animation:
+    rl-sceneCornerFadeIn 0.8s ease-out 0.4s both,
+    rl-sceneCornerPulse 4s ease-in-out 1.5s infinite;
+}
+
+/* ── Top-right and bottom-left corners via alert-stack and webcam ── */
+
+/* ── Ambient top edge line ── */
+
+.rl-overlay-root .rl-scene-edge-top {
+  position: absolute;
+  top: 0;
+  left: 80px;
+  right: 80px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--rl-glow-blue-soft),
+    transparent
+  );
+  animation: rl-sceneEdgeFadeIn 1.2s ease-out 0.6s both;
+}
+
+.rl-overlay-root .rl-scene-edge-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 80px;
+  right: 80px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--rl-glow-orange-soft),
+    transparent
+  );
+  animation: rl-sceneEdgeFadeIn 1.2s ease-out 0.8s both;
+}
+
+/* ── Scene-level keyframes ── */
+
+@keyframes rl-sceneCornerFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes rl-sceneCornerPulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes rl-sceneEdgeFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.4;
+  }
+}
+
+/* ============================================================
+   Alert Stack
+   ============================================================ */
+
+.rl-alert-stack {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}

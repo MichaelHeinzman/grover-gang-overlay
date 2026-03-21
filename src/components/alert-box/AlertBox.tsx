@@ -1,6 +1,7 @@
 "use client";
 
-import type { AlertItem } from "./useAlertQueue";
+import type { AlertItem } from "../use-alert-queue/useAlertQueue";
+import "./alert-box.css";
 
 export function AlertBox({ alert }: { alert: AlertItem }) {
   const cls = `rl-alert ${alert.exiting ? "rl-alert--exiting" : "rl-alert--entering"}`;
