@@ -1,0 +1,213 @@
+/* ============================================================
+   Scene Transition Effects — Motion-driven
+   ============================================================
+   Animations are handled by the motion library (Framer Motion).
+   CSS provides only structure, gradients and decorative styles.
+   ============================================================ */
+
+/* ── Full-screen transition container ── */
+
+.rl-transition {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ── Solid opaque cover panel (positioned by motion) ── */
+
+.rl-transition__cover {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(6, 10, 24, 1) 0%,
+    rgba(10, 16, 36, 1) 40%,
+    rgba(8, 14, 30, 1) 100%
+  );
+}
+
+/* ── Leading edge glow (positioned by motion) ── */
+
+.rl-transition__edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  z-index: 2;
+}
+
+.rl-transition__edge--blue {
+  background: linear-gradient(
+    180deg,
+    var(--rl-blue),
+    var(--rl-cyan),
+    var(--rl-orange),
+    var(--rl-gold)
+  );
+  box-shadow:
+    0 0 30px var(--rl-glow-blue),
+    0 0 60px var(--rl-glow-blue-soft),
+    6px 0 20px var(--rl-glow-blue),
+    -6px 0 20px var(--rl-glow-orange);
+}
+
+.rl-transition__edge--orange {
+  background: linear-gradient(
+    180deg,
+    var(--rl-orange),
+    var(--rl-gold),
+    var(--rl-blue),
+    var(--rl-cyan)
+  );
+  box-shadow:
+    0 0 30px var(--rl-glow-orange),
+    0 0 60px var(--rl-glow-orange-soft),
+    6px 0 20px var(--rl-glow-orange),
+    -6px 0 20px var(--rl-glow-blue);
+}
+
+/* ── Horizontal energy bars on cover surface ── */
+
+.rl-transition__bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  animation: rl-barPulse 0.8s ease-out forwards;
+}
+
+.rl-transition__bar--1 {
+  top: 18%;
+  background: linear-gradient(
+    90deg,
+    transparent 10%,
+    var(--rl-blue) 30%,
+    var(--rl-cyan) 70%,
+    transparent 90%
+  );
+  filter: drop-shadow(0 0 8px var(--rl-glow-blue));
+  animation-delay: 0.05s;
+}
+
+.rl-transition__bar--2 {
+  top: 36%;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent 5%,
+    var(--rl-orange) 25%,
+    var(--rl-gold) 75%,
+    transparent 95%
+  );
+  filter: drop-shadow(0 0 12px var(--rl-glow-orange));
+  animation-delay: 0.1s;
+}
+
+.rl-transition__bar--3 {
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 15%,
+    var(--rl-cyan) 40%,
+    var(--rl-blue) 60%,
+    transparent 85%
+  );
+  filter: drop-shadow(0 0 4px var(--rl-glow-blue));
+  animation-delay: 0.15s;
+}
+
+.rl-transition__bar--4 {
+  top: 66%;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent 8%,
+    var(--rl-gold) 35%,
+    var(--rl-orange) 65%,
+    transparent 92%
+  );
+  filter: drop-shadow(0 0 10px var(--rl-glow-orange));
+  animation-delay: 0.08s;
+}
+
+.rl-transition__bar--5 {
+  top: 82%;
+  background: linear-gradient(
+    90deg,
+    transparent 12%,
+    var(--rl-blue) 35%,
+    var(--rl-cyan) 65%,
+    transparent 88%
+  );
+  filter: drop-shadow(0 0 6px var(--rl-glow-blue));
+  animation-delay: 0.12s;
+}
+
+@keyframes rl-barPulse {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.45;
+  }
+}
+
+/* ── Scanline texture on cover ── */
+
+.rl-transition__scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.025) 2px,
+    rgba(255, 255, 255, 0.025) 4px
+  );
+  opacity: 0;
+  z-index: 1;
+  animation: rl-scanFadeIn 0.3s ease-out 0.1s forwards;
+}
+
+@keyframes rl-scanFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Center energy flash (animated by motion inline) ── */
+
+.rl-transition__flash {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(0, 229, 255, 0.35) 0%,
+    rgba(0, 170, 255, 0.12) 40%,
+    transparent 70%
+  );
+  transform-origin: center center;
+  translate: -50% -50%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ── Scene content wrapper (used by motion.div in SceneLayer) ── */
+
+.rl-scene-content {
+  position: absolute;
+  inset: 0;
+}
