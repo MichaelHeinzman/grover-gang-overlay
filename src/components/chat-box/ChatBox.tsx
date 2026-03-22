@@ -21,7 +21,7 @@ interface ChatMessage {
 }
 
 const MAX_MESSAGES = 5;
-const MSG_LIFETIME_MS = 60_000;
+const MSG_LIFETIME_MS = 30_000;
 
 const USER_COLORS = [
   "#00AAFF",
@@ -78,7 +78,7 @@ export function ChatBox() {
     const timer = setInterval(() => {
       const cutoff = Date.now() - MSG_LIFETIME_MS;
       setMessages((prev) => prev.filter((m) => m.ts > cutoff));
-    }, 5000);
+    }, 1000);
     return () => clearInterval(timer);
   }, [messages.length]);
 
