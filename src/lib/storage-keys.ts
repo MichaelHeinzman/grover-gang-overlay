@@ -11,7 +11,7 @@ export const STORAGE_KEYS = {
 } as const;
 
 export const OBS_DEFAULTS = {
-  IP: "192.168.1.248",
+  IP: "localhost",
   PORT: "4455",
 } as const;
 

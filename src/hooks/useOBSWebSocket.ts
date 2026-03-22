@@ -37,16 +37,11 @@ export function useOBSWebSocket(callbacks: OBSCallbacks) {
         localStorage.getItem(STORAGE_KEYS.OBS_WS_TUNNEL_URL) ??
         process.env.NEXT_PUBLIC_OBS_WS_TUNNEL_URL ??
         "";
-      const isSecurePage = location.protocol === "https:";
       let url: string;
 
       if (tunnelUrl) {
         // Use the Cloudflare Tunnel URL (always wss://)
         url = tunnelUrl.replace(/^https?:\/\//, "wss://").replace(/\/$/, "");
-      } else if (isSecurePage) {
-        // Can't use ws:// from an https page — skip OBS connection
-        console.warn("[OBS-WS] Skipped: no tunnel URL configured for HTTPS.");
-        return;
       } else {
         const ip =
           localStorage.getItem(STORAGE_KEYS.OBS_WS_IP) ?? OBS_DEFAULTS.IP;
