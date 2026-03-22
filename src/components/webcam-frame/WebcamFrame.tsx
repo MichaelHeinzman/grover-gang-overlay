@@ -85,9 +85,17 @@ export function WebcamFrame({
       {/* Scanline overlay */}
       <div className="rl-webcam__scanline" />
 
-      {/* Username tag */}
+      {/* Username tag — integrated into webcam frame */}
       {username && (
-        <div className="rl-webcam__username">{username.toUpperCase()}</div>
+        <div className="rl-webcam__username-bar">
+          <div className="rl-webcam__username-accent-left" />
+          <div className="rl-webcam__username-glow" />
+          <span className="rl-webcam__username-text">
+            {username.toUpperCase()}
+          </span>
+          <div className="rl-webcam__username-accent-right" />
+          <div className="rl-webcam__username-scanline" />
+        </div>
       )}
     </div>
   );

@@ -249,27 +249,119 @@
   animation: rl-webcamScanBeam 4s linear infinite;
 }
 
-/* ── Username tag ── */
+/* ── Username bar (integrated into webcam frame) ── */
 
-.rl-webcam__username {
+.rl-webcam__username-bar {
   position: absolute;
-  bottom: -26px;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80%;
+  padding: 5px 18px 7px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--rl-blue) 18%, rgba(8, 12, 28, 0.95)) 0%,
+    rgba(8, 12, 28, 0.97) 100%
+  );
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 10px 100%);
+  border-top: 2px solid color-mix(in srgb, var(--rl-blue) 50%, transparent);
+  overflow: hidden;
+  animation:
+    rl-usernameBarReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.9s both,
+    rl-usernameBarBorderPulse 3s ease-in-out 1.5s infinite;
+}
+
+/* Traveling light across username bar */
+.rl-webcam__username-glow {
+  position: absolute;
+  top: 0;
+  left: -40px;
+  width: 40px;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--rl-cyan) 40%, transparent),
+    transparent
+  );
+  animation: rl-usernameTravelingGlow 4s ease-in-out 2s infinite;
+  pointer-events: none;
+}
+
+/* Subtle scanline overlay on the bar */
+.rl-webcam__username-scanline {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.02) 2px,
+    rgba(255, 255, 255, 0.02) 4px
+  );
+  pointer-events: none;
+}
+
+/* Accent line — left */
+.rl-webcam__username-accent-left {
+  position: absolute;
+  top: 0;
   left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--rl-glow-blue),
+    var(--rl-cyan),
+    transparent
+  );
+  filter: drop-shadow(0 0 4px var(--rl-glow-blue));
+  animation:
+    rl-usernameAccentExpand 0.5s ease-out 1.2s forwards,
+    rl-webcamGlowBlue 3s ease-in-out 1.7s infinite;
+}
+
+/* Accent line — right */
+.rl-webcam__username-accent-right {
+  position: absolute;
+  top: 0;
   right: 0;
-  text-align: center;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--rl-orange),
+    var(--rl-glow-orange)
+  );
+  filter: drop-shadow(0 0 4px var(--rl-glow-orange));
+  animation:
+    rl-usernameAccentExpand 0.5s ease-out 1.4s forwards,
+    rl-webcamGlowOrange 3s ease-in-out 1.9s infinite;
+}
+
+/* Username text */
+.rl-webcam__username-text {
+  position: relative;
+  z-index: 1;
   font-family: var(--rl-font-display);
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 5px;
   text-transform: uppercase;
   color: var(--rl-text-primary);
+  white-space: nowrap;
   text-shadow:
-    0 0 10px var(--rl-glow-blue),
-    0 0 20px var(--rl-glow-blue-soft),
-    0 2px 4px rgba(0, 0, 0, 0.8);
+    0 0 8px var(--rl-glow-blue),
+    0 0 18px var(--rl-glow-blue-soft),
+    0 1px 3px rgba(0, 0, 0, 0.9);
   animation:
-    rl-usernameReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) 1.2s both,
-    rl-usernameGlow 3s ease-in-out 2s infinite;
+    rl-usernameTextReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) 1s both,
+    rl-usernameGlowCycle 3s ease-in-out 2s infinite,
+    rl-usernameLetterBreathe 6s ease-in-out 2s infinite;
 }
 
 /* ── Small label below username ── */
@@ -349,32 +441,97 @@
   }
 }
 
-@keyframes rl-usernameReveal {
+@keyframes rl-usernameBarReveal {
   from {
     opacity: 0;
-    transform: translateY(8px) scaleX(0.6);
-    letter-spacing: 12px;
+    min-width: 30%;
+    transform: translateX(-50%) scaleX(0.4);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scaleX(1);
-    letter-spacing: 4px;
+    min-width: 80%;
+    transform: translateX(-50%) scaleX(1);
   }
 }
 
-@keyframes rl-usernameGlow {
+@keyframes rl-usernameTextReveal {
+  from {
+    opacity: 0;
+    letter-spacing: 14px;
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 5px;
+    filter: blur(0);
+  }
+}
+
+@keyframes rl-usernameGlowCycle {
   0%,
   100% {
     text-shadow:
-      0 0 10px var(--rl-glow-blue),
-      0 0 20px var(--rl-glow-blue-soft),
-      0 2px 4px rgba(0, 0, 0, 0.8);
+      0 0 8px var(--rl-glow-blue),
+      0 0 18px var(--rl-glow-blue-soft),
+      0 1px 3px rgba(0, 0, 0, 0.9);
   }
   50% {
     text-shadow:
-      0 0 14px var(--rl-glow-orange),
-      0 0 28px var(--rl-glow-orange-soft),
-      0 2px 4px rgba(0, 0, 0, 0.8);
+      0 0 12px var(--rl-glow-orange),
+      0 0 26px var(--rl-glow-orange-soft),
+      0 1px 3px rgba(0, 0, 0, 0.9);
+  }
+}
+
+@keyframes rl-usernameLetterBreathe {
+  0%,
+  100% {
+    letter-spacing: 5px;
+  }
+  50% {
+    letter-spacing: 7px;
+  }
+}
+
+@keyframes rl-usernameBarBorderPulse {
+  0%,
+  100% {
+    border-top-color: color-mix(in srgb, var(--rl-blue) 50%, transparent);
+    box-shadow:
+      0 -2px 8px color-mix(in srgb, var(--rl-glow-blue) 40%, transparent),
+      inset 0 1px 6px color-mix(in srgb, var(--rl-glow-blue) 15%, transparent);
+  }
+  50% {
+    border-top-color: color-mix(in srgb, var(--rl-orange) 50%, transparent);
+    box-shadow:
+      0 -2px 12px color-mix(in srgb, var(--rl-glow-orange) 40%, transparent),
+      inset 0 1px 8px color-mix(in srgb, var(--rl-glow-orange) 15%, transparent);
+  }
+}
+
+@keyframes rl-usernameTravelingGlow {
+  0% {
+    left: -40px;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    left: calc(100% + 40px);
+    opacity: 0;
+  }
+}
+
+@keyframes rl-usernameAccentExpand {
+  from {
+    width: 0;
+  }
+  to {
+    width: 40%;
   }
 }
 
