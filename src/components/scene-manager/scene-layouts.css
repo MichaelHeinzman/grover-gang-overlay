@@ -27,9 +27,197 @@
   justify-content: center;
   background: radial-gradient(
     ellipse at center,
-    rgba(8, 12, 28, 0.6) 0%,
-    transparent 70%
+    rgba(8, 12, 28, 0.95) 0%,
+    rgba(4, 6, 18, 1) 100%
   );
+  overflow: hidden;
+}
+
+/* ── Animated grid background ── */
+
+.rl-splash-grid {
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: rl-gridDrift 20s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes rl-gridDrift {
+  0% {
+    transform: translate(0, 0) perspective(500px) rotateX(30deg);
+  }
+  100% {
+    transform: translate(-60px, -60px) perspective(500px) rotateX(30deg);
+  }
+}
+
+/* ── Floating particles ── */
+
+.rl-splash-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.rl-splash-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  opacity: 0;
+  animation: rl-particleFloat linear infinite;
+}
+
+.rl-splash-particle:nth-child(1) {
+  left: 10%;
+  animation-duration: 8s;
+  animation-delay: 0s;
+}
+.rl-splash-particle:nth-child(2) {
+  left: 25%;
+  animation-duration: 11s;
+  animation-delay: 1s;
+}
+.rl-splash-particle:nth-child(3) {
+  left: 40%;
+  animation-duration: 9s;
+  animation-delay: 3s;
+}
+.rl-splash-particle:nth-child(4) {
+  left: 55%;
+  animation-duration: 13s;
+  animation-delay: 2s;
+}
+.rl-splash-particle:nth-child(5) {
+  left: 70%;
+  animation-duration: 10s;
+  animation-delay: 4s;
+}
+.rl-splash-particle:nth-child(6) {
+  left: 85%;
+  animation-duration: 12s;
+  animation-delay: 0.5s;
+}
+.rl-splash-particle:nth-child(7) {
+  left: 15%;
+  animation-duration: 14s;
+  animation-delay: 5s;
+}
+.rl-splash-particle:nth-child(8) {
+  left: 60%;
+  animation-duration: 9s;
+  animation-delay: 2.5s;
+}
+.rl-splash-particle:nth-child(9) {
+  left: 35%;
+  animation-duration: 11s;
+  animation-delay: 6s;
+}
+.rl-splash-particle:nth-child(10) {
+  left: 80%;
+  animation-duration: 10s;
+  animation-delay: 1.5s;
+}
+.rl-splash-particle:nth-child(11) {
+  left: 5%;
+  animation-duration: 15s;
+  animation-delay: 3.5s;
+}
+.rl-splash-particle:nth-child(12) {
+  left: 50%;
+  animation-duration: 8s;
+  animation-delay: 7s;
+}
+
+@keyframes rl-particleFloat {
+  0% {
+    bottom: -5%;
+    opacity: 0;
+    transform: translateX(0) scale(0.5);
+  }
+  10% {
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateX(30px) scale(1);
+  }
+  90% {
+    opacity: 0.4;
+  }
+  100% {
+    bottom: 105%;
+    opacity: 0;
+    transform: translateX(-20px) scale(0.3);
+  }
+}
+
+/* ── Gradient sweep overlay ── */
+
+.rl-splash-sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.12;
+  animation: rl-sweepMove 6s ease-in-out infinite alternate;
+}
+
+@keyframes rl-sweepMove {
+  0% {
+    background: linear-gradient(
+      135deg,
+      transparent 30%,
+      var(--splash-accent, rgba(0, 170, 255, 0.15)) 50%,
+      transparent 70%
+    );
+  }
+  100% {
+    background: linear-gradient(
+      225deg,
+      transparent 30%,
+      var(--splash-accent, rgba(0, 170, 255, 0.15)) 50%,
+      transparent 70%
+    );
+  }
+}
+
+/* ── Scanlines ── */
+
+.rl-splash-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.008) 2px,
+    rgba(255, 255, 255, 0.008) 4px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Vignette ── */
+
+.rl-splash-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
 }
 
 .rl-splash-content {
@@ -37,7 +225,8 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  animation: rl-splashReveal 0.8s ease-out both;
+  position: relative;
+  z-index: 1;
 }
 
 .rl-splash-title {
@@ -79,15 +268,23 @@
   animation: rl-countdownPulse 2s ease-in-out infinite;
 }
 
-@keyframes rl-splashReveal {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+/* Letter animation base */
+.rl-splash-letter {
+  will-change: transform, opacity, filter;
+}
+
+/* Ambient glow behind splash text */
+.rl-splash-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
 }
 
 @keyframes rl-countdownPulse {

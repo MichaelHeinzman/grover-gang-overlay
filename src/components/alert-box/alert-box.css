@@ -43,7 +43,8 @@
 .rl-alert--entering {
   animation:
     rl-alertSlam 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
-    rl-alertGlow 2s ease-in-out 0.5s infinite;
+    rl-alertGlow 2s ease-in-out 0.5s infinite,
+    rl-alertBorderShimmer 3s linear 0.5s infinite;
 }
 
 /* ── Exit animation: slide + shrink ── */
@@ -66,8 +67,27 @@
     color-mix(in srgb, var(--_alert-color, var(--rl-blue)) 60%, white),
     transparent
   );
-  animation: rl-alertAccentSweep 0.6s ease-out 0.15s forwards;
+  animation:
+    rl-alertAccentSweep 0.6s ease-out 0.15s forwards,
+    rl-alertAccentGlow 2.5s ease-in-out 0.8s infinite;
   filter: drop-shadow(0 0 4px var(--_alert-color, var(--rl-blue)));
+}
+
+.rl-alert__accent-top::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
+  opacity: 0;
+  animation: rl-alertTravelLight 2s ease-in-out 0.8s infinite;
 }
 
 /* ── Bottom accent border ── */
@@ -302,5 +322,58 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes rl-alertAccentGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px var(--_alert-color, var(--rl-blue)));
+    opacity: 0.8;
+  }
+  50% {
+    filter: drop-shadow(0 0 12px var(--_alert-color, var(--rl-blue)))
+      drop-shadow(
+        0 0 24px
+          color-mix(
+            in srgb,
+            var(--_alert-color, var(--rl-blue)) 40%,
+            transparent
+          )
+      );
+    opacity: 1;
+  }
+}
+
+@keyframes rl-alertBorderShimmer {
+  0% {
+    border-left-color: var(--_alert-color, var(--rl-blue));
+  }
+  50% {
+    border-left-color: color-mix(
+      in srgb,
+      var(--_alert-color, var(--rl-blue)) 70%,
+      white
+    );
+  }
+  100% {
+    border-left-color: var(--_alert-color, var(--rl-blue));
+  }
+}
+
+@keyframes rl-alertTravelLight {
+  0% {
+    left: -30px;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    left: calc(100% + 30px);
+    opacity: 0;
   }
 }

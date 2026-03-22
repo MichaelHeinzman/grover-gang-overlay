@@ -1,0 +1,140 @@
+/* ============================================================
+   Hype Train Overlay — Pro Streamer Style
+   ============================================================ */
+
+.rl-hype-train {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  translate: -50% 0;
+  width: 500px;
+  z-index: 80;
+  pointer-events: none;
+}
+
+.rl-hype-train__card {
+  background: linear-gradient(
+    135deg,
+    var(--rl-panel-bg-start),
+    var(--rl-panel-bg-end)
+  );
+  border: 1px solid rgba(255, 68, 68, 0.4);
+  border-radius: 4px;
+  padding: 14px 18px;
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--rl-clip-size)) 0,
+    100% var(--rl-clip-size),
+    100% 100%,
+    var(--rl-clip-size) 100%,
+    0 calc(100% - var(--rl-clip-size))
+  );
+}
+
+.rl-hype-train__scanline {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.01) 2px,
+    rgba(255, 255, 255, 0.01) 4px
+  );
+  pointer-events: none;
+}
+
+.rl-hype-train__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.rl-hype-train__title {
+  font-family: var(--rl-font-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #ff4444;
+  text-shadow: 0 0 12px rgba(255, 68, 68, 0.6);
+}
+
+.rl-hype-train__level {
+  font-family: var(--rl-font-display);
+  font-size: 20px;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 16px rgba(255, 215, 0, 0.6);
+}
+
+.rl-hype-train__bar-track {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.rl-hype-train__bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #ff4444, #ff8c00, #ffd700);
+  position: relative;
+  transition: width 0.4s ease-out;
+}
+
+.rl-hype-train__bar-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 60%, rgba(255, 255, 255, 0.3));
+  animation: rl-hypeShine 1.5s ease-in-out infinite;
+}
+
+@keyframes rl-hypeShine {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.rl-hype-train__contributors {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  font-family: var(--rl-font-body);
+  font-size: 13px;
+  color: var(--rl-text-muted);
+  letter-spacing: 1px;
+}
+
+.rl-hype-train__glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 6px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 68, 68, 0.15),
+    rgba(255, 215, 0, 0.1)
+  );
+  filter: blur(8px);
+  z-index: -1;
+  animation: rl-hypeGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes rl-hypeGlow {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}

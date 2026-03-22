@@ -1,0 +1,110 @@
+/* ============================================================
+   Poll Overlay Widget
+   ============================================================ */
+
+.rl-poll {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: 340px;
+  z-index: 75;
+  pointer-events: none;
+}
+
+.rl-poll__card {
+  background: linear-gradient(
+    135deg,
+    var(--rl-panel-bg-start),
+    var(--rl-panel-bg-end)
+  );
+  border: 1px solid rgba(0, 170, 255, 0.3);
+  border-radius: 4px;
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--rl-clip-size)) 0,
+    100% var(--rl-clip-size),
+    100% 100%,
+    var(--rl-clip-size) 100%,
+    0 calc(100% - var(--rl-clip-size))
+  );
+}
+
+.rl-poll__title {
+  font-family: var(--rl-font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--rl-blue);
+  text-shadow: 0 0 10px rgba(0, 170, 255, 0.4);
+  margin-bottom: 10px;
+}
+
+.rl-poll__question {
+  font-family: var(--rl-font-body);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--rl-text-primary);
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+
+.rl-poll__choices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rl-poll__choice {
+  position: relative;
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rl-poll__choice-bar {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 170, 255, 0.2),
+    rgba(0, 170, 255, 0.05)
+  );
+  border-radius: 3px;
+  transform-origin: left;
+}
+
+.rl-poll__choice-bar--winner {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 215, 0, 0.3),
+    rgba(255, 215, 0, 0.08)
+  );
+}
+
+.rl-poll__choice-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  z-index: 1;
+}
+
+.rl-poll__choice-label {
+  font-family: var(--rl-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--rl-text-secondary);
+}
+
+.rl-poll__choice-votes {
+  font-family: var(--rl-font-display);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rl-text-muted);
+  letter-spacing: 1px;
+}
