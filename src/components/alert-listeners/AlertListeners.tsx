@@ -15,6 +15,8 @@ export function AlertListeners({
 }: {
   push: (alert: Omit<AlertItem, "id">) => void;
 }) {
+  // ── Core alerts ──
+
   useTwitchEvent(
     "channel.follow",
     useCallback(
@@ -24,7 +26,7 @@ export function AlertListeners({
           title: "New Teammate",
           message: `${event.user_name} joined the squad!`,
           color: "#00AAFF",
-          icon: "\ud83c\udfce\ufe0f",
+          icon: "🏎️",
         });
       },
       [push],
@@ -41,7 +43,7 @@ export function AlertListeners({
           title: "Ranked Up",
           message: `${event.user_name} subscribed (${tier})!`,
           color: "#FF8C00",
-          icon: "\ud83c\udfc6",
+          icon: "🏆",
         });
       },
       [push],
@@ -58,7 +60,7 @@ export function AlertListeners({
           title: "Gift Drop",
           message: `${event.user_name} gifted ${total} sub${total > 1 ? "s" : ""}!`,
           color: "#00E5FF",
-          icon: "\ud83c\udf81",
+          icon: "🎁",
         });
       },
       [push],
@@ -74,7 +76,7 @@ export function AlertListeners({
           title: "Boost Pad",
           message: `${event.user_name} cheered ${event.bits} bits!`,
           color: "#FFD700",
-          icon: "\u26a1",
+          icon: "⚡",
         });
       },
       [push],
@@ -90,7 +92,7 @@ export function AlertListeners({
           title: "Demolition!",
           message: `${event.from_broadcaster_user_name} raided with ${event.viewers} viewers!`,
           color: "#FF4500",
-          icon: "\ud83d\udca5",
+          icon: "💥",
         });
       },
       [push],
@@ -107,7 +109,271 @@ export function AlertListeners({
           title: "Item Drop",
           message: `${event.user_name} redeemed "${reward.title}" (${reward.cost} pts)`,
           color: "#00FF88",
-          icon: "\ud83c\udfaf",
+          icon: "🎯",
+        });
+      },
+      [push],
+    ),
+  );
+
+  // ── Subscription variants ──
+
+  useTwitchEvent(
+    "channel.subscription.message",
+    useCallback(
+      (event) => {
+        const tier = TIER_NAMES[event.tier as string] ?? "Tier 1";
+        const months = (event.cumulative_months as number) ?? 0;
+        const msg = (event.message as { text?: string })?.text ?? "";
+        push({
+          type: "resub",
+          title: "Resub!",
+          message: `${event.user_name} resubbed for ${months} months (${tier})!${msg ? ` "${msg}"` : ""}`,
+          color: "#FF8C00",
+          icon: "🔄",
+        });
+      },
+      [push],
+    ),
+  );
+
+  useTwitchEvent(
+    "channel.subscription.end",
+    useCallback(
+      (event) => {
+        push({
+          type: "info",
+          title: "Sub Ended",
+          message: `${event.user_name}'s subscription has ended.`,
+          color: "#888899",
+          icon: "👋",
+        });
+      },
+      [push],
+    ),
+  );
+
+  // ── Shoutouts ──
+
+  useTwitchEvent(
+    "channel.shoutout.create",
+    useCallback(
+      (event) => {
+        push({
+          type: "shoutout",
+          title: "Shoutout!",
+          message: `Shouting out ${event.to_broadcaster_user_name}! Go check them out!`,
+          color: "#A855F7",
+          icon: "📣",
+        });
+      },
+      [push],
+    ),
+  );
+
+  useTwitchEvent(
+    "channel.shoutout.receive",
+    useCallback(
+      (event) => {
+        push({
+          type: "shoutout",
+          title: "Shoutout Received!",
+          message: `${event.from_broadcaster_user_name} gave us a shoutout!`,
+          color: "#A855F7",
+          icon: "🌟",
+        });
+      },
+      [push],
+    ),
+  );
+
+  // ── Charity ──
+
+  useTwitchEvent(
+    "channel.charity_campaign.donate",
+    useCallback(
+      (event) => {
+        const amount = event.amount as
+          | { value: number; currency: string }
+          | undefined;
+        const value = amount
+          ? `${(amount.value / 100).toFixed(2)} ${amount.currency}`
+          : "";
+        push({
+          type: "charity",
+          title: "Charity Donation!",
+          message: `${event.user_name} donated ${value} to charity!`,
+          color: "#FF69B4",
+          icon: "💝",
+        });
+      },
+      [push],
+    ),
+  );
+
+  useTwitchEvent(
+    "channel.charity_campaign.start",
+    useCallback(
+      (event) => {
+        push({
+          type: "charity",
+          title: "Charity Campaign Started!",
+          message: `Supporting: ${(event.charity_name as string) ?? "charity"}`,
+          color: "#FF69B4",
+          icon: "🎗️",
+        });
+      },
+      [push],
+    ),
+  );
+
+  useTwitchEvent(
+    "channel.charity_campaign.stop",
+    useCallback(
+      (event) => {
+        const raised = event.current_amount as
+          | { value: number; currency: string }
+          | undefined;
+        const total = raised
+          ? `${(raised.value / 100).toFixed(2)} ${raised.currency}`
+          : "";
+        push({
+          type: "charity",
+          title: "Charity Campaign Ended!",
+          message: `Total raised: ${total}`,
+          color: "#FF69B4",
+          icon: "🏅",
+        });
+      },
+      [push],
+    ),
+  );
+
+  // ── Moderation / Roles ──
+
+  useTwitchEvent(
+    "channel.moderator.add",
+    useCallback(
+      (event) => {
+        push({
+          type: "mod",
+          title: "New Moderator!",
+          message: `${event.user_name} has been modded! 🗡️`,
+          color: "#00B894",
+          icon: "🛡️",
+        });
+      },
+      [push],
+    ),
+  );
+
+  useTwitchEvent(
+    "channel.moderator.remove",
+    useCallback(
+      (event) => {
+        push({
+          type: "info",
+          title: "Mod Removed",
+          message: `${event.user_name} is no longer a moderator.`,
+          color: "#636E72",
+          icon: "🛡️",
+        });
+      },
+      [push],
+    ),
+  );
+
+  useTwitchEvent(
+    "channel.vip.add",
+    useCallback(
+      (event) => {
+        push({
+          type: "mod",
+          title: "New VIP!",
+          message: `${event.user_name} is now a VIP! ✨`,
+          color: "#E056A0",
+          icon: "💎",
+        });
+      },
+      [push],
+    ),
+  );
+
+  useTwitchEvent(
+    "channel.vip.remove",
+    useCallback(
+      (event) => {
+        push({
+          type: "info",
+          title: "VIP Removed",
+          message: `${event.user_name} is no longer a VIP.`,
+          color: "#636E72",
+          icon: "💎",
+        });
+      },
+      [push],
+    ),
+  );
+
+  // ── Stream status ──
+
+  useTwitchEvent(
+    "stream.online",
+    useCallback(() => {
+      push({
+        type: "info",
+        title: "Stream Online!",
+        message: "The stream is now live!",
+        color: "#00FF88",
+        icon: "🔴",
+      });
+    }, [push]),
+  );
+
+  useTwitchEvent(
+    "stream.offline",
+    useCallback(() => {
+      push({
+        type: "info",
+        title: "Stream Offline",
+        message: "The stream has ended.",
+        color: "#636E72",
+        icon: "⭕",
+      });
+    }, [push]),
+  );
+
+  // ── Misc ──
+
+  useTwitchEvent(
+    "channel.update",
+    useCallback(
+      (event) => {
+        const title = (event.title as string) ?? "";
+        const category = (event.category_name as string) ?? "";
+        push({
+          type: "info",
+          title: "Channel Updated",
+          message: `${title}${category ? ` — ${category}` : ""}`,
+          color: "#74B9FF",
+          icon: "📝",
+        });
+      },
+      [push],
+    ),
+  );
+
+  useTwitchEvent(
+    "channel.ad_break.begin",
+    useCallback(
+      (event) => {
+        const duration = (event.duration_seconds as number) ?? 0;
+        push({
+          type: "info",
+          title: "Ad Break",
+          message: `Ad break started (${duration}s)`,
+          color: "#FDCB6E",
+          icon: "📺",
         });
       },
       [push],

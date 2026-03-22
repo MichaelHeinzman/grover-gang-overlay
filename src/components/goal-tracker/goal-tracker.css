@@ -1,0 +1,79 @@
+/* ============================================================
+   Goal Tracker Overlay
+   ============================================================ */
+
+.rl-goal-tracker {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 320px;
+  z-index: 70;
+  pointer-events: none;
+}
+
+.rl-goal-tracker__card {
+  background: linear-gradient(
+    135deg,
+    var(--rl-panel-bg-start),
+    var(--rl-panel-bg-end)
+  );
+  border: 1px solid rgba(0, 255, 136, 0.25);
+  border-radius: 4px;
+  padding: 12px 16px;
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--rl-clip-size)) 0,
+    100% var(--rl-clip-size),
+    100% 100%,
+    var(--rl-clip-size) 100%,
+    0 calc(100% - var(--rl-clip-size))
+  );
+}
+
+.rl-goal-tracker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.rl-goal-tracker__label {
+  font-family: var(--rl-font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--rl-green);
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+}
+
+.rl-goal-tracker__count {
+  font-family: var(--rl-font-display);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--rl-text-primary);
+}
+
+.rl-goal-tracker__description {
+  font-family: var(--rl-font-body);
+  font-size: 14px;
+  color: var(--rl-text-secondary);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.rl-goal-tracker__bar-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.rl-goal-tracker__bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--rl-green), var(--rl-cyan));
+}

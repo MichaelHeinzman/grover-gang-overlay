@@ -11,6 +11,10 @@ import { AlertBox } from "@/components/alert-box/AlertBox";
 import { ChatBox } from "@/components/chat-box/ChatBox";
 import { WebcamFrame } from "@/components/webcam-frame/WebcamFrame";
 import { useAlertQueue } from "@/components/use-alert-queue/useAlertQueue";
+import { HypeTrainBar } from "@/components/hype-train/HypeTrainBar";
+import { InfoTicker } from "@/components/info-ticker/InfoTicker";
+import { PollOverlay } from "@/components/poll-overlay/PollOverlay";
+import { PredictionOverlay } from "@/components/prediction-overlay/PredictionOverlay";
 import {
   SceneManagerProvider,
   useSceneManager,
@@ -38,6 +42,12 @@ function OverlayContent({
 
       <SceneTransition />
 
+      {/* Interactive overlay widgets (visible on all scenes) */}
+      <HypeTrainBar />
+      <InfoTicker />
+      <PollOverlay />
+      <PredictionOverlay />
+
       <div className="rl-alert-stack">
         {alerts.map((alert) => (
           <AlertBox key={alert.id} alert={alert} />
@@ -46,11 +56,13 @@ function OverlayContent({
 
       <SceneLayer sceneName="starting-soon">
         <SplashScene
+          sceneName="starting-soon"
           title="Starting Soon"
           subtitle="Hang tight..."
           countdown={countdown}
           accentColor="var(--rl-blue)"
         />
+        <ChatBox />
       </SceneLayer>
 
       <SceneLayer sceneName="gameplay">
@@ -68,15 +80,22 @@ function OverlayContent({
       </SceneLayer>
 
       <SceneLayer sceneName="brb">
-        <SplashScene title="Be Right Back" accentColor="var(--rl-orange)" />
+        <SplashScene
+          sceneName="brb"
+          title="Be Right Back"
+          accentColor="var(--rl-orange)"
+        />
+        <ChatBox />
       </SceneLayer>
 
       <SceneLayer sceneName="ending">
         <SplashScene
+          sceneName="ending"
           title="Thanks for Watching"
           subtitle="See you next time!"
           accentColor="var(--rl-gold)"
         />
+        <ChatBox />
       </SceneLayer>
     </TwitchOverlay>
   );

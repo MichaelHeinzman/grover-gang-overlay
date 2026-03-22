@@ -1,0 +1,154 @@
+/* ============================================================
+   Prediction Overlay Widget
+   ============================================================ */
+
+.rl-prediction {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: 360px;
+  z-index: 76;
+  pointer-events: none;
+}
+
+.rl-prediction__card {
+  background: linear-gradient(
+    135deg,
+    var(--rl-panel-bg-start),
+    var(--rl-panel-bg-end)
+  );
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 4px;
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--rl-clip-size)) 0,
+    100% var(--rl-clip-size),
+    100% 100%,
+    var(--rl-clip-size) 100%,
+    0 calc(100% - var(--rl-clip-size))
+  );
+}
+
+.rl-prediction__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.rl-prediction__badge {
+  font-family: var(--rl-font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 2px;
+  background: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+}
+
+.rl-prediction__badge--locked {
+  background: rgba(255, 140, 0, 0.2);
+  color: var(--rl-orange);
+}
+
+.rl-prediction__badge--ended {
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--rl-green);
+}
+
+.rl-prediction__title {
+  font-family: var(--rl-font-body);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--rl-text-primary);
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+
+.rl-prediction__outcomes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rl-prediction__outcome {
+  position: relative;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rl-prediction__outcome--winner {
+  border-color: rgba(0, 255, 136, 0.4);
+}
+
+.rl-prediction__outcome-bar {
+  position: absolute;
+  inset: 0;
+  border-radius: 3px;
+  transform-origin: left;
+}
+
+.rl-prediction__outcome:nth-child(1) .rl-prediction__outcome-bar {
+  background: linear-gradient(
+    90deg,
+    rgba(59, 130, 246, 0.25),
+    rgba(59, 130, 246, 0.05)
+  );
+}
+
+.rl-prediction__outcome:nth-child(2) .rl-prediction__outcome-bar {
+  background: linear-gradient(
+    90deg,
+    rgba(239, 68, 68, 0.25),
+    rgba(239, 68, 68, 0.05)
+  );
+}
+
+.rl-prediction__outcome--winner .rl-prediction__outcome-bar {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 255, 136, 0.3),
+    rgba(0, 255, 136, 0.05)
+  ) !important;
+}
+
+.rl-prediction__outcome-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  z-index: 1;
+}
+
+.rl-prediction__outcome-label {
+  font-family: var(--rl-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rl-text-secondary);
+}
+
+.rl-prediction__outcome-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rl-prediction__outcome-pct {
+  font-family: var(--rl-font-display);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--rl-text-primary);
+}
+
+.rl-prediction__outcome-points {
+  font-family: var(--rl-font-body);
+  font-size: 12px;
+  color: var(--rl-text-muted);
+}
