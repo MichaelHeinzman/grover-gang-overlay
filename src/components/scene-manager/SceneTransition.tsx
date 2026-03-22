@@ -1,11 +1,12 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import type { TransitionPhase } from "./useSceneManager";
+import { useSceneManager } from "./SceneManagerProvider";
 import "./scene-transition.css";
 
 /** Full-screen cover transition that fully hides content between scenes. */
-export function SceneTransition({ phase }: { phase: TransitionPhase }) {
+export function SceneTransition() {
+  const { phase } = useSceneManager();
   const showCover =
     phase === "cover-in" || phase === "covered" || phase === "cover-out";
 

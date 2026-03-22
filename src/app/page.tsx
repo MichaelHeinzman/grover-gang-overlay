@@ -11,10 +11,11 @@ import {
   clearStreamStartTime,
 } from "@/components/scene-manager/useCountdown";
 import { useState, useEffect, useCallback } from "react";
-
-const CLIENT_ID_KEY = "grover_gang_client_id";
-const CAMERA_LABEL_KEY = "grover_gang_camera_label";
-const ALERT_CHANNEL = "grover-gang-alerts";
+import {
+  STORAGE_KEYS,
+  OBS_DEFAULTS,
+  BROADCAST_CHANNELS,
+} from "@/lib/storage-keys";
 
 interface TestAlert {
   type: string;
@@ -77,7 +78,7 @@ const TEST_ALERTS: TestAlert[] = [
 ];
 
 function sendTestAlert(ta: TestAlert) {
-  const bc = new BroadcastChannel(ALERT_CHANNEL);
+  const bc = new BroadcastChannel(BROADCAST_CHANNELS.ALERTS);
   bc.postMessage({
     type: "test-alert",
     alert: {
@@ -95,7 +96,7 @@ function getClientId(): string {
   if (typeof window === "undefined") return "";
   return (
     process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ??
-    localStorage.getItem(CLIENT_ID_KEY) ??
+    localStorage.getItem(STORAGE_KEYS.CLIENT_ID) ??
     ""
   );
 }
@@ -108,15 +109,29 @@ function DashboardContent() {
   const [scanning, setScanning] = useState(false);
   const [scanError, setScanError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [obsPassword, setObsPassword] = useState("");
+  const [obsIp, setObsIp] = useState<string>(OBS_DEFAULTS.IP);
+  const [obsPort, setObsPort] = useState<string>(OBS_DEFAULTS.PORT);
+  const [obsSettingsSaved, setObsSettingsSaved] = useState(false);
   const [startHour, setStartHour] = useState("7");
   const [startMinute, setStartMinute] = useState("00");
   const [startPeriod, setStartPeriod] = useState<"PM" | "AM">("PM");
   const [startTimeSet, setStartTimeSet] = useState(false);
 
   useEffect(() => {
-    setCameraLabel(localStorage.getItem(CAMERA_LABEL_KEY) ?? "");
+    setCameraLabel(localStorage.getItem(STORAGE_KEYS.CAMERA_LABEL) ?? "");
+    setObsPassword(localStorage.getItem(STORAGE_KEYS.OBS_WS_PASSWORD) ?? "");
+    setObsIp(localStorage.getItem(STORAGE_KEYS.OBS_WS_IP) ?? OBS_DEFAULTS.IP);
+    setObsPort(
+      localStorage.getItem(STORAGE_KEYS.OBS_WS_PORT) ?? OBS_DEFAULTS.PORT,
+    );
+    if (
+      localStorage.getItem(STORAGE_KEYS.OBS_WS_IP) ||
+      localStorage.getItem(STORAGE_KEYS.OBS_WS_PASSWORD)
+    )
+      setObsSettingsSaved(true);
     // Load any previously saved start time
-    const saved = localStorage.getItem("grover_gang_stream_start") ?? "";
+    const saved = localStorage.getItem(STORAGE_KEYS.STREAM_START) ?? "";
     if (saved) {
       const d = new Date(saved);
       if (!isNaN(d.getTime())) {
@@ -161,7 +176,7 @@ function DashboardContent() {
       // If stored camera no longer exists, clear it
       if (cameraLabel && !videoDevices.some((d) => d.label === cameraLabel)) {
         setCameraLabel("");
-        localStorage.removeItem(CAMERA_LABEL_KEY);
+        localStorage.removeItem(STORAGE_KEYS.CAMERA_LABEL);
       }
     } catch {
       setScanError("Camera permission denied or no cameras found.");
@@ -173,9 +188,9 @@ function DashboardContent() {
   function handleCameraSelect(label: string) {
     setCameraLabel(label);
     if (label) {
-      localStorage.setItem(CAMERA_LABEL_KEY, label);
+      localStorage.setItem(STORAGE_KEYS.CAMERA_LABEL, label);
     } else {
-      localStorage.removeItem(CAMERA_LABEL_KEY);
+      localStorage.removeItem(STORAGE_KEYS.CAMERA_LABEL);
     }
   }
 
@@ -484,6 +499,161 @@ function DashboardContent() {
           <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>
             OBS Setup
           </h2>
+
+          {/* OBS WebSocket Settings */}
+          <div style={{ marginBottom: 16 }}>
+            <label
+              style={{
+                fontSize: 13,
+                color: "#888",
+                display: "block",
+                marginBottom: 4,
+              }}
+            >
+              OBS WebSocket Connection
+            </label>
+            <p
+              style={{
+                color: "#666",
+                fontSize: 12,
+                marginBottom: 8,
+                lineHeight: 1.5,
+              }}
+            >
+              Found in OBS &rarr; Tools &rarr; WebSocket Server Settings.
+            </p>
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                alignItems: "stretch",
+                marginBottom: 8,
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <label
+                  style={{
+                    fontSize: 11,
+                    color: "#666",
+                    display: "block",
+                    marginBottom: 2,
+                  }}
+                >
+                  IP Address
+                </label>
+                <input
+                  type="text"
+                  value={obsIp}
+                  onChange={(e) => {
+                    setObsIp(e.target.value);
+                    setObsSettingsSaved(false);
+                  }}
+                  placeholder="192.168.1.248"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: 6,
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    background: "rgba(30,30,30,0.9)",
+                    color: "#fff",
+                    fontSize: 14,
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+              <div style={{ width: 80 }}>
+                <label
+                  style={{
+                    fontSize: 11,
+                    color: "#666",
+                    display: "block",
+                    marginBottom: 2,
+                  }}
+                >
+                  Port
+                </label>
+                <input
+                  type="text"
+                  value={obsPort}
+                  onChange={(e) => {
+                    setObsPort(e.target.value);
+                    setObsSettingsSaved(false);
+                  }}
+                  placeholder="4455"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: 6,
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    background: "rgba(30,30,30,0.9)",
+                    color: "#fff",
+                    fontSize: 14,
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 8, alignItems: "stretch" }}>
+              <input
+                type="password"
+                value={obsPassword}
+                onChange={(e) => {
+                  setObsPassword(e.target.value);
+                  setObsSettingsSaved(false);
+                }}
+                placeholder="WebSocket password (optional)"
+                style={{
+                  flex: 1,
+                  padding: "10px 14px",
+                  borderRadius: 6,
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  background: "rgba(30,30,30,0.9)",
+                  color: "#fff",
+                  fontSize: 14,
+                  outline: "none",
+                }}
+              />
+              <button
+                onClick={() => {
+                  localStorage.setItem(
+                    STORAGE_KEYS.OBS_WS_IP,
+                    obsIp || OBS_DEFAULTS.IP,
+                  );
+                  localStorage.setItem(
+                    STORAGE_KEYS.OBS_WS_PORT,
+                    obsPort || OBS_DEFAULTS.PORT,
+                  );
+                  if (obsPassword) {
+                    localStorage.setItem(
+                      STORAGE_KEYS.OBS_WS_PASSWORD,
+                      obsPassword,
+                    );
+                  } else {
+                    localStorage.removeItem(STORAGE_KEYS.OBS_WS_PASSWORD);
+                  }
+                  setObsSettingsSaved(true);
+                }}
+                disabled={obsSettingsSaved}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: 6,
+                  border: "none",
+                  background: obsSettingsSaved
+                    ? "rgba(0,229,160,0.15)"
+                    : "#00aaff",
+                  color: obsSettingsSaved ? "#00e5a0" : "#fff",
+                  cursor: obsSettingsSaved ? "not-allowed" : "pointer",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {obsSettingsSaved ? "Saved!" : "Save"}
+              </button>
+            </div>
+          </div>
           <ol
             style={{
               color: "#aaa",
@@ -757,7 +927,7 @@ export default function DashboardPage() {
           onClick={() => {
             const trimmed = inputId.trim();
             if (trimmed) {
-              localStorage.setItem(CLIENT_ID_KEY, trimmed);
+              localStorage.setItem(STORAGE_KEYS.CLIENT_ID, trimmed);
               setClientId(trimmed);
             }
           }}
