@@ -38,6 +38,12 @@ function OverlayContent({
 
       <SceneTransition />
 
+      <div className="rl-alert-stack">
+        {alerts.map((alert) => (
+          <AlertBox key={alert.id} alert={alert} />
+        ))}
+      </div>
+
       <SceneLayer sceneName="starting-soon">
         <SplashScene
           title="Starting Soon"
@@ -50,11 +56,6 @@ function OverlayContent({
       <SceneLayer sceneName="gameplay">
         <div className="rl-scene-edge-top" />
         <div className="rl-scene-edge-bottom" />
-        <div className="rl-alert-stack">
-          {alerts.map((alert) => (
-            <AlertBox key={alert.id} alert={alert} />
-          ))}
-        </div>
         <ChatBox />
         <WebcamFrame cameraLabel={cameraLabel} username={username} />
       </SceneLayer>
@@ -62,11 +63,6 @@ function OverlayContent({
       <SceneLayer sceneName="just-chatting">
         <div className="rl-scene-edge-top" />
         <div className="rl-scene-edge-bottom" />
-        <div className="rl-alert-stack">
-          {alerts.map((alert) => (
-            <AlertBox key={alert.id} alert={alert} />
-          ))}
-        </div>
         <ChatBox />
         <WebcamFrame cameraLabel={cameraLabel} username={username} />
       </SceneLayer>
