@@ -93,6 +93,46 @@ export function playRedeemSound() {
   playTone(880, 0.3, "sine", 0.18, 0.24);
 }
 
+/** Dramatic digital whoosh — scene transition */
+export function playSceneTransitionSound() {
+  const ctx = getCtx();
+  const now = ctx.currentTime;
+
+  // Noise burst for "digital sweep" texture
+  const bufferSize = ctx.sampleRate * 0.3;
+  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * 0.5;
+  }
+  const noise = ctx.createBufferSource();
+  noise.buffer = noiseBuffer;
+  const noiseGain = ctx.createGain();
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = "bandpass";
+  noiseFilter.frequency.setValueAtTime(800, now);
+  noiseFilter.frequency.linearRampToValueAtTime(4000, now + 0.15);
+  noiseFilter.frequency.linearRampToValueAtTime(200, now + 0.3);
+  noiseFilter.Q.value = 2;
+  noiseGain.gain.setValueAtTime(0.12, now);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(ctx.destination);
+  noise.start(now);
+  noise.stop(now + 0.3);
+
+  // Descending sweep — low rumble
+  playTone(400, 0.25, "sawtooth", 0.1, 0, 80);
+  // Rising digital sweep
+  playTone(200, 0.2, "square", 0.08, 0.05, 1200);
+  // Impact tone
+  playTone(100, 0.3, "sine", 0.15, 0.15);
+  // Bright tail chime
+  playTone(880, 0.15, "sine", 0.1, 0.2);
+  playTone(1320, 0.2, "sine", 0.08, 0.25);
+}
+
 const SOUND_MAP: Record<string, () => void> = {
   follow: playFollowSound,
   subscribe: playSubSound,
