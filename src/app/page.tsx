@@ -113,6 +113,7 @@ function DashboardContent() {
   const [obsIp, setObsIp] = useState<string>(OBS_DEFAULTS.IP);
   const [obsPort, setObsPort] = useState<string>(OBS_DEFAULTS.PORT);
   const [obsSettingsSaved, setObsSettingsSaved] = useState(false);
+  const [obsTunnelUrl, setObsTunnelUrl] = useState("");
   const [startHour, setStartHour] = useState("7");
   const [startMinute, setStartMinute] = useState("00");
   const [startPeriod, setStartPeriod] = useState<"PM" | "AM">("PM");
@@ -125,6 +126,7 @@ function DashboardContent() {
     setObsPort(
       localStorage.getItem(STORAGE_KEYS.OBS_WS_PORT) ?? OBS_DEFAULTS.PORT,
     );
+    setObsTunnelUrl(localStorage.getItem(STORAGE_KEYS.OBS_WS_TUNNEL_URL) ?? "");
     if (
       localStorage.getItem(STORAGE_KEYS.OBS_WS_IP) ||
       localStorage.getItem(STORAGE_KEYS.OBS_WS_PASSWORD)
@@ -522,6 +524,60 @@ function DashboardContent() {
             >
               Found in OBS &rarr; Tools &rarr; WebSocket Server Settings.
             </p>
+            <div style={{ marginBottom: 10 }}>
+              <label
+                style={{
+                  fontSize: 11,
+                  color: "#666",
+                  display: "block",
+                  marginBottom: 2,
+                }}
+              >
+                Cloudflare Tunnel URL{" "}
+                <span style={{ color: "#444" }}>(for HTTPS / Vercel)</span>
+              </label>
+              <input
+                type="text"
+                value={obsTunnelUrl}
+                onChange={(e) => {
+                  setObsTunnelUrl(e.target.value);
+                  setObsSettingsSaved(false);
+                }}
+                placeholder="e.g. https://obs-ws.your-tunnel.trycloudflare.com"
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  borderRadius: 6,
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  background: "rgba(30,30,30,0.9)",
+                  color: "#fff",
+                  fontSize: 14,
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+              <p
+                style={{
+                  color: "#555",
+                  fontSize: 11,
+                  marginTop: 4,
+                  lineHeight: 1.4,
+                }}
+              >
+                Run{" "}
+                <code
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    padding: "1px 6px",
+                    borderRadius: 3,
+                  }}
+                >
+                  cloudflared tunnel --url http://localhost:4455
+                </code>{" "}
+                and paste the URL here. Required when serving the overlay over
+                HTTPS.
+              </p>
+            </div>
             <div
               style={{
                 display: "flex",
@@ -625,6 +681,14 @@ function DashboardContent() {
                     STORAGE_KEYS.OBS_WS_PORT,
                     obsPort || OBS_DEFAULTS.PORT,
                   );
+                  if (obsTunnelUrl.trim()) {
+                    localStorage.setItem(
+                      STORAGE_KEYS.OBS_WS_TUNNEL_URL,
+                      obsTunnelUrl.trim(),
+                    );
+                  } else {
+                    localStorage.removeItem(STORAGE_KEYS.OBS_WS_TUNNEL_URL);
+                  }
                   if (obsPassword) {
                     localStorage.setItem(
                       STORAGE_KEYS.OBS_WS_PASSWORD,
