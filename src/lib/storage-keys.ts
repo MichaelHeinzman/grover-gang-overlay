@@ -6,6 +6,7 @@ export const STORAGE_KEYS = {
   OBS_WS_IP: "grover_gang_obs_ws_ip",
   OBS_WS_PORT: "grover_gang_obs_ws_port",
   OBS_WS_PASSWORD: "grover_gang_obs_ws_password",
+  OBS_WS_TUNNEL_URL: "grover_gang_obs_ws_tunnel_url",
   STREAM_START: "grover_gang_stream_start",
 } as const;
 
