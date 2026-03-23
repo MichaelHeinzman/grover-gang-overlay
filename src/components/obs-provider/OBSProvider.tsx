@@ -109,6 +109,16 @@ export function OBSProvider({ children }: { children: ReactNode }) {
         wasConnected = true;
         retryCount = 0;
         setConnected(true);
+
+        // Query current scene so the overlay initializes to the right state
+        try {
+          const sceneResult = await obs.call("GetCurrentProgramScene");
+          dispatch("CurrentProgramSceneChanged", {
+            sceneName: sceneResult.currentProgramSceneName,
+          });
+        } catch {
+          // Non-critical — will sync on next scene change
+        }
       } catch (err: unknown) {
         // Ignore errors from Strict Mode teardown (cleanup called disconnect mid-connect)
         if (disposed) return;

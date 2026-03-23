@@ -88,6 +88,7 @@ export function SceneManagerProvider({
   const [displayScene, setDisplayScene] = useState<SceneName>(initialScene);
   const [phase, setPhase] = useState<TransitionPhase>("idle");
   const transitioning = useRef(false);
+  const isFirstSceneEvent = useRef(true);
 
   const switchScene = useCallback(
     (scene: SceneName) => {
@@ -142,7 +143,15 @@ export function SceneManagerProvider({
       on("CurrentProgramSceneChanged", (data) => {
         const sceneName = data.sceneName as string | undefined;
         if (sceneName && sceneName in OBS_SCENE_MAP) {
-          switchRef.current(OBS_SCENE_MAP[sceneName]);
+          const mapped = OBS_SCENE_MAP[sceneName];
+          if (isFirstSceneEvent.current) {
+            // On first event (initial query), set scene directly without animation
+            isFirstSceneEvent.current = false;
+            setActiveScene(mapped);
+            setDisplayScene(mapped);
+          } else {
+            switchRef.current(mapped);
+          }
         }
       }),
     ];
