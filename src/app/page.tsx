@@ -10,12 +10,10 @@ import {
   setStreamStartTime,
   clearStreamStartTime,
 } from "@/components/scene-manager/useCountdown";
-import { useState, useEffect, useCallback } from "react";
-import {
-  STORAGE_KEYS,
-  OBS_DEFAULTS,
-  BROADCAST_CHANNELS,
-} from "@/lib/storage-keys";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { STORAGE_KEYS, OBS_DEFAULTS } from "@/lib/storage-keys";
+import { OBSProvider, useOBS } from "@/components/obs-provider/OBSProvider";
+import { Accordion } from "@/components/accordion/Accordion";
 
 interface TestAlert {
   type: string;
@@ -123,12 +121,31 @@ const TEST_ALERTS: TestAlert[] = [
     color: "#74B9FF",
     icon: "📝",
   },
+  {
+    type: "chat",
+    label: "Chat",
+    title: "",
+    message: "This is a test chat message! 🚀",
+    color: "#EDEDED",
+    icon: "💬",
+  },
 ];
 
-function sendTestAlert(ta: TestAlert) {
-  const bc = new BroadcastChannel(BROADCAST_CHANNELS.ALERTS);
-  bc.postMessage({
-    type: "test-alert",
+function sendTestAlert(
+  ta: TestAlert,
+  broadcast: (data: Record<string, unknown>) => void,
+) {
+  if (ta.type === "chat") {
+    broadcast({
+      type: "grover-gang-chat",
+      user: "TestUser",
+      color: "#00AAFF",
+      message: ta.message,
+    });
+    return;
+  }
+  broadcast({
+    type: "grover-gang-alert",
     alert: {
       type: ta.type,
       title: ta.title,
@@ -137,7 +154,6 @@ function sendTestAlert(ta: TestAlert) {
       icon: ta.icon,
     },
   });
-  bc.close();
 }
 
 function getClientId(): string {
@@ -152,6 +168,7 @@ function getClientId(): string {
 function DashboardContent() {
   const { token, loading, login, logout } = useTwitchAuth();
   const connection = useTwitchConnection();
+  const { broadcast, connected: obsConnected } = useOBS();
   const [cameraLabel, setCameraLabel] = useState("");
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
   const [scanning, setScanning] = useState(false);
@@ -166,6 +183,45 @@ function DashboardContent() {
   const [startMinute, setStartMinute] = useState("00");
   const [startPeriod, setStartPeriod] = useState<"PM" | "AM">("PM");
   const [startTimeSet, setStartTimeSet] = useState(false);
+  const [configSynced, setConfigSynced] = useState(false);
+
+  // Ref to hold latest config values for auto-broadcast
+  const configRef = useRef({ clientId: "", cameraLabel: "", username: "" });
+
+  // Keep configRef up to date
+  useEffect(() => {
+    configRef.current = {
+      clientId:
+        process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ??
+        localStorage.getItem(STORAGE_KEYS.CLIENT_ID) ??
+        "",
+      cameraLabel,
+      username: token?.login ?? "",
+    };
+  }, [cameraLabel, token?.login]);
+
+  /** Broadcast overlay config to all OBS-connected clients */
+  const broadcastConfig = useCallback(() => {
+    broadcast({
+      type: "grover-gang-config",
+      ...configRef.current,
+    });
+    setConfigSynced(true);
+    setTimeout(() => setConfigSynced(false), 2000);
+    console.log("[Dashboard] Broadcast config via OBS");
+  }, [broadcast]);
+
+  // Auto-broadcast config when OBS connects
+  const prevConnected = useRef(false);
+  useEffect(() => {
+    if (obsConnected && !prevConnected.current) {
+      // Small delay to ensure connection is fully established
+      const timer = setTimeout(broadcastConfig, 500);
+      prevConnected.current = true;
+      return () => clearTimeout(timer);
+    }
+    if (!obsConnected) prevConnected.current = false;
+  }, [obsConnected, broadcastConfig]);
 
   useEffect(() => {
     setCameraLabel(localStorage.getItem(STORAGE_KEYS.CAMERA_LABEL) ?? "");
@@ -196,31 +252,37 @@ function DashboardContent() {
 
   const overlayUrl =
     typeof window !== "undefined"
-      ? (() => {
-          const base = `${window.location.origin}/overlay`;
-          const params = new URLSearchParams();
-          if (cameraLabel) params.set("cam", cameraLabel);
-          if (token?.login) params.set("user", token.login);
-          const qs = params.toString();
-          return qs ? `${base}?${qs}` : base;
-        })()
+      ? `${window.location.origin}/overlay`
       : "/overlay";
 
   const scanCameras = useCallback(async () => {
     setScanning(true);
     setScanError("");
     try {
-      // Briefly request camera to get permission (labels need permission)
-      const tempStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: false,
-      });
-      // Immediately release the camera
-      tempStream.getTracks().forEach((t) => t.stop());
+      // Try enumerating first — labels are available if permission was previously granted
+      let devices = await navigator.mediaDevices.enumerateDevices();
+      let videoDevices = devices.filter((d) => d.kind === "videoinput");
 
-      // Now enumerate with labels available
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter((d) => d.kind === "videoinput");
+      // If labels are empty, we need to request permission via getUserMedia
+      if (videoDevices.length === 0 || !videoDevices[0].label) {
+        try {
+          const tempStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+          tempStream.getTracks().forEach((t) => t.stop());
+        } catch {
+          // Camera may be in use by OBS — still try to enumerate
+        }
+        devices = await navigator.mediaDevices.enumerateDevices();
+        videoDevices = devices.filter((d) => d.kind === "videoinput");
+      }
+
+      if (videoDevices.length === 0) {
+        setScanError("No cameras found.");
+        return;
+      }
+
       setCameras(videoDevices);
 
       // If stored camera no longer exists, clear it
@@ -285,7 +347,7 @@ function DashboardContent() {
             letterSpacing: 1,
           }}
         >
-          Connection
+          Twitch
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span
@@ -304,6 +366,31 @@ function DashboardContent() {
           <span style={{ fontSize: 15, fontWeight: 600 }}>
             {connection.status.charAt(0).toUpperCase() +
               connection.status.slice(1)}
+          </span>
+        </div>
+        <div
+          style={{
+            fontSize: 13,
+            color: "#888",
+            marginBottom: 4,
+            marginTop: 10,
+            textTransform: "uppercase",
+            letterSpacing: 1,
+          }}
+        >
+          OBS WebSocket
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: "50%",
+              background: obsConnected ? "#00e5a0" : "#ff4500",
+            }}
+          />
+          <span style={{ fontSize: 15, fontWeight: 600 }}>
+            {obsConnected ? "Connected" : "Disconnected"}
           </span>
         </div>
       </div>
@@ -370,18 +457,7 @@ function DashboardContent() {
 
       {/* Stream Countdown */}
       {token && (
-        <div
-          style={{
-            marginTop: 24,
-            padding: "18px",
-            borderRadius: 8,
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
-          <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
-            Stream Countdown
-          </h2>
+        <Accordion id="countdown" title="Stream Countdown">
           <p style={{ color: "#888", fontSize: 13, marginBottom: 14 }}>
             Set a start time for the &quot;Starting Soon&quot; countdown.
             Updates the overlay in real-time.
@@ -532,24 +608,12 @@ function DashboardContent() {
               Clear
             </button>
           </div>
-        </div>
+        </Accordion>
       )}
 
-      {/* OBS Instructions */}
+      {/* OBS Setup */}
       {token && (
-        <div
-          style={{
-            marginTop: 24,
-            padding: "18px",
-            borderRadius: 8,
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
-          <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>
-            OBS Setup
-          </h2>
-
+        <Accordion id="obs-setup" title="OBS Setup">
           {/* OBS WebSocket Settings */}
           <div style={{ marginBottom: 16 }}>
             <label
@@ -934,25 +998,69 @@ function DashboardContent() {
             to OBS Browser Source &rarr; Custom CSS... &rarr; Page permissions
             (or OBS launch flags) so OBS can access the camera without a prompt.
           </p>
-        </div>
+
+          {/* Sync config via OBS */}
+          <div
+            style={{
+              marginTop: 16,
+              padding: "14px 18px",
+              borderRadius: 8,
+              background: obsConnected
+                ? "rgba(0,229,160,0.05)"
+                : "rgba(255,69,0,0.05)",
+              border: `1px solid ${
+                obsConnected ? "rgba(0,229,160,0.2)" : "rgba(255,69,0,0.2)"
+              }`,
+            }}
+          >
+            <p
+              style={{
+                color: "#aaa",
+                fontSize: 13,
+                marginBottom: 10,
+                lineHeight: 1.5,
+              }}
+            >
+              Config (camera, username, client ID) is sent to the overlay
+              automatically via OBS WebSocket. Click below to re-sync.
+            </p>
+            <button
+              onClick={broadcastConfig}
+              disabled={!obsConnected}
+              style={{
+                padding: "10px 20px",
+                borderRadius: 6,
+                border: "none",
+                background: configSynced
+                  ? "rgba(0,229,160,0.15)"
+                  : obsConnected
+                    ? "#00aaff"
+                    : "#444",
+                color: configSynced
+                  ? "#00e5a0"
+                  : obsConnected
+                    ? "#fff"
+                    : "#888",
+                cursor: obsConnected ? "pointer" : "not-allowed",
+                fontSize: 13,
+                fontWeight: 600,
+              }}
+            >
+              {configSynced
+                ? "Synced!"
+                : obsConnected
+                  ? "Sync Config to Overlay"
+                  : "OBS Not Connected"}
+            </button>
+          </div>
+        </Accordion>
       )}
 
       {/* Test Alerts */}
       {token && (
-        <div
-          style={{
-            marginTop: 24,
-            padding: "18px",
-            borderRadius: 8,
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
-          <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
-            Test Alerts
-          </h2>
+        <Accordion id="test-alerts" title="Test Alerts">
           <p style={{ color: "#888", fontSize: 13, marginBottom: 14 }}>
-            Open your overlay in another Chrome tab, then click a button below.
+            Sends test alerts to the overlay via OBS WebSocket.
           </p>
           <div
             style={{
@@ -964,7 +1072,7 @@ function DashboardContent() {
             {TEST_ALERTS.map((ta) => (
               <button
                 key={ta.type}
-                onClick={() => sendTestAlert(ta)}
+                onClick={() => sendTestAlert(ta, broadcast)}
                 style={{
                   padding: "8px 14px",
                   borderRadius: 6,
@@ -980,7 +1088,7 @@ function DashboardContent() {
               </button>
             ))}
           </div>
-        </div>
+        </Accordion>
       )}
     </div>
   );
@@ -1062,12 +1170,14 @@ export default function DashboardPage() {
   }
 
   return (
-    <TwitchProvider
-      clientId={clientId}
-      scopes={TWITCH_SCOPES}
-      subscriptions={TWITCH_SUBSCRIPTIONS}
-    >
-      <DashboardContent />
-    </TwitchProvider>
+    <OBSProvider>
+      <TwitchProvider
+        clientId={clientId}
+        scopes={TWITCH_SCOPES}
+        subscriptions={TWITCH_SUBSCRIPTIONS}
+      >
+        <DashboardContent />
+      </TwitchProvider>
+    </OBSProvider>
   );
 }

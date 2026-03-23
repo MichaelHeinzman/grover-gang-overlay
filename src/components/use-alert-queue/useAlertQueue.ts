@@ -2,8 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { playAlertSound } from "@/lib/alert-sounds";
-
-const CHANNEL_NAME = "grover-gang-alerts";
+import { useOBS } from "@/components/obs-provider/OBSProvider";
 
 export interface AlertItem {
   id: string;
@@ -70,16 +69,15 @@ export function useAlertQueue() {
     [showAlert],
   );
 
-  // Listen for test alerts from dashboard via BroadcastChannel
+  // Listen for test alerts from dashboard via OBS WebSocket
+  const { on } = useOBS();
   useEffect(() => {
-    const bc = new BroadcastChannel(CHANNEL_NAME);
-    bc.onmessage = (e) => {
-      if (e.data?.type === "test-alert") {
-        push(e.data.alert);
-      }
-    };
-    return () => bc.close();
-  }, [push]);
+    return on("CustomEvent", (data) => {
+      if (data.type !== "grover-gang-alert") return;
+      const alert = data.alert as Omit<AlertItem, "id"> | undefined;
+      if (alert) push(alert);
+    });
+  }, [on, push]);
 
   return { alerts, push };
 }

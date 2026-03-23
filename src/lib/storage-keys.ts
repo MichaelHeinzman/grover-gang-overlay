@@ -8,6 +8,8 @@ export const STORAGE_KEYS = {
   OBS_WS_PASSWORD: "grover_gang_obs_ws_password",
   OBS_WS_TUNNEL_URL: "grover_gang_obs_ws_tunnel_url",
   STREAM_START: "grover_gang_stream_start",
+  /** Cached overlay config received via OBS BroadcastCustomEvent */
+  OBS_CONFIG_CACHE: "grover_gang_obs_config",
 } as const;
 
 export const OBS_DEFAULTS = {

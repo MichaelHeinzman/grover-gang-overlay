@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useTwitchEvent } from "@four-leaf-studios/twitch-overlay";
 import { useWidgetTransition } from "@/hooks/useWidgetTransition";
+import { useOBS } from "@/components/obs-provider/OBSProvider";
 import "./chat-box.css";
 
 interface MessageFragment {
@@ -71,6 +72,24 @@ export function ChatBox() {
       setMessages((prev) => [...prev, msg].slice(-MAX_MESSAGES));
     }, []),
   );
+
+  // Listen for test chat messages via OBS WebSocket
+  const { on } = useOBS();
+  useEffect(() => {
+    return on("CustomEvent", (data) => {
+      if (data.type !== "grover-gang-chat") return;
+      const msg: ChatMessage = {
+        id: crypto.randomUUID(),
+        user: (data.user as string) ?? "TestUser",
+        color:
+          (data.color as string) ||
+          getUserColor((data.user as string) ?? "TestUser"),
+        fragments: [{ type: "text", text: (data.message as string) ?? "" }],
+        ts: Date.now(),
+      };
+      setMessages((prev) => [...prev, msg].slice(-MAX_MESSAGES));
+    });
+  }, [on]);
 
   // Auto-expire old messages
   useEffect(() => {
