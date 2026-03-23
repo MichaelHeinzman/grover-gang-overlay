@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { playSceneTransitionSound } from "@/lib/alert-sounds";
-import { useOBSWebSocket } from "@/hooks/useOBSWebSocket";
+import { useOBS } from "@/components/obs-provider/OBSProvider";
 
 // ── Types ──
 
@@ -131,17 +131,23 @@ export function SceneManagerProvider({
     switchRef.current = switchScene;
   }, [switchScene]);
 
-  // OBS WebSocket — single source of truth for scene changes
-  useOBSWebSocket({
-    onSceneTransitionStarted() {
-      document.body.style.setProperty("background", "#000", "important");
-    },
-    onSceneChanged(sceneName) {
-      if (sceneName in OBS_SCENE_MAP) {
-        switchRef.current(OBS_SCENE_MAP[sceneName]);
-      }
-    },
-  });
+  // OBS context — subscribe to scene events
+  const { on } = useOBS();
+
+  useEffect(() => {
+    const unsubs = [
+      on("SceneTransitionStarted", () => {
+        document.body.style.setProperty("background", "#000", "important");
+      }),
+      on("CurrentProgramSceneChanged", (data) => {
+        const sceneName = data.sceneName as string | undefined;
+        if (sceneName && sceneName in OBS_SCENE_MAP) {
+          switchRef.current(OBS_SCENE_MAP[sceneName]);
+        }
+      }),
+    ];
+    return () => unsubs.forEach((fn) => fn());
+  }, [on]);
 
   // Keyboard fallback
   useEffect(() => {

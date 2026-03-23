@@ -15,16 +15,37 @@ import { HypeTrainBar } from "@/components/hype-train/HypeTrainBar";
 import { InfoTicker } from "@/components/info-ticker/InfoTicker";
 import { PollOverlay } from "@/components/poll-overlay/PollOverlay";
 import { PredictionOverlay } from "@/components/prediction-overlay/PredictionOverlay";
-import {
-  SceneManagerProvider,
-  useSceneManager,
-} from "@/components/scene-manager/SceneManagerProvider";
+import { SceneManagerProvider } from "@/components/scene-manager/SceneManagerProvider";
 import { SceneLayer } from "@/components/scene-manager/SceneLayer";
 import { SplashScene } from "@/components/scene-manager/SplashScene";
 import { SceneTransition } from "@/components/scene-manager/SceneTransition";
 import { useCountdown } from "@/components/scene-manager/useCountdown";
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { OBSProvider, useOBS } from "@/components/obs-provider/OBSProvider";
+import { useState, useEffect } from "react";
+
+// ── Cached config helpers ──
+
+interface OverlayConfig {
+  clientId: string;
+  cameraLabel: string;
+  username: string;
+}
+
+function loadCachedConfig(): OverlayConfig {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.OBS_CONFIG_CACHE);
+    if (raw) return JSON.parse(raw) as OverlayConfig;
+  } catch {
+    /* ignore */
+  }
+  return { clientId: "", cameraLabel: "", username: "" };
+}
+
+function saveCachedConfig(config: OverlayConfig) {
+  localStorage.setItem(STORAGE_KEYS.OBS_CONFIG_CACHE, JSON.stringify(config));
+}
+
+// ── Overlay content (unchanged) ──
 
 function OverlayContent({
   cameraLabel,
@@ -103,35 +124,73 @@ function OverlayContent({
 
 export default function OverlayPage() {
   return (
-    <Suspense>
-      <OverlayInner />
-    </Suspense>
+    <OBSProvider>
+      <OverlayConfigGate />
+    </OBSProvider>
   );
 }
 
-function OverlayInner() {
-  const searchParams = useSearchParams();
-  const [clientId, setClientId] = useState("");
+/**
+ * Listens for overlay config via OBS BroadcastCustomEvent.
+ * Falls back to cached localStorage → URL params → env vars.
+ */
+function OverlayConfigGate() {
+  const { on } = useOBS();
+  const [config, setConfig] = useState<OverlayConfig | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  const cameraLabel = searchParams.get("cam") ?? undefined;
-  const username = searchParams.get("user") ?? undefined;
-
+  // Load fallback config on mount
   useEffect(() => {
     setMounted(true);
-    const id =
-      process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ??
-      localStorage.getItem(STORAGE_KEYS.CLIENT_ID) ??
+
+    // Build fallback config: cached OBS config → URL params → env vars → localStorage
+    const cached = loadCachedConfig();
+    const params = new URLSearchParams(window.location.search);
+
+    const clientId =
+      cached.clientId ||
+      process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ||
+      localStorage.getItem(STORAGE_KEYS.CLIENT_ID) ||
       "";
-    setClientId(id);
+    const cameraLabel = cached.cameraLabel || params.get("cam") || "";
+    const username = cached.username || params.get("user") || "";
+
+    setConfig({ clientId, cameraLabel, username });
   }, []);
 
+  // Listen for live config updates from dashboard via OBS
+  useEffect(() => {
+    return on("CustomEvent", (data) => {
+      if (data.type !== "grover-gang-config") return;
+
+      const incoming: OverlayConfig = {
+        clientId: (data.clientId as string) || "",
+        cameraLabel: (data.cameraLabel as string) || "",
+        username: (data.username as string) || "",
+      };
+
+      // Cache for next startup
+      saveCachedConfig(incoming);
+
+      setConfig((prev) => ({
+        clientId: incoming.clientId || prev?.clientId || "",
+        cameraLabel: incoming.cameraLabel || prev?.cameraLabel || "",
+        username: incoming.username || prev?.username || "",
+      }));
+
+      console.log("[OBS Config] Received config update:", incoming);
+    });
+  }, [on]);
+
   if (!mounted) return null;
+
+  const clientId = config?.clientId || "";
 
   if (!clientId) {
     return (
       <div style={{ color: "#ff4500", padding: 40, fontSize: 18 }}>
-        No Client ID configured. Open the dashboard first to set it up.
+        No Client ID configured. Open the dashboard first to set it up, or
+        broadcast config from the dashboard via OBS.
       </div>
     );
   }
@@ -143,7 +202,10 @@ function OverlayInner() {
       subscriptions={TWITCH_SUBSCRIPTIONS}
     >
       <SceneManagerProvider>
-        <OverlayContent cameraLabel={cameraLabel} username={username} />
+        <OverlayContent
+          cameraLabel={config?.cameraLabel || undefined}
+          username={config?.username || undefined}
+        />
       </SceneManagerProvider>
     </TwitchProvider>
   );
