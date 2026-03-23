@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useOBS } from "@/components/obs-provider/OBSProvider";
 
 const STREAM_START_KEY = "grover_gang_stream_start";
 const CHANNEL_NAME = "grover-gang-countdown";
@@ -43,8 +44,9 @@ export function useCountdown() {
       : "",
   );
   const [display, setDisplay] = useState("");
+  const { on } = useOBS();
 
-  // Listen for broadcast updates from dashboard
+  // Listen for broadcast updates from dashboard (same-browser tabs)
   useEffect(() => {
     const bc = new BroadcastChannel(CHANNEL_NAME);
     bc.onmessage = (e) => {
@@ -54,6 +56,20 @@ export function useCountdown() {
     };
     return () => bc.close();
   }, []);
+
+  // Listen for OBS custom events (cross-browser, e.g. OBS Browser Source)
+  useEffect(() => {
+    return on("CustomEvent", (data) => {
+      if (data.type !== "grover-gang-countdown") return;
+      const time = (data.time as string) ?? "";
+      targetRef.current = time;
+      if (time) {
+        localStorage.setItem(STREAM_START_KEY, time);
+      } else {
+        localStorage.removeItem(STREAM_START_KEY);
+      }
+    });
+  }, [on]);
 
   // Tick every second
   useEffect(() => {

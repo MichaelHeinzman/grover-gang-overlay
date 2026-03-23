@@ -567,7 +567,9 @@ function DashboardContent() {
                 if (target.getTime() <= Date.now()) {
                   target.setDate(target.getDate() + 1);
                 }
-                setStreamStartTime(target.toISOString());
+                const iso = target.toISOString();
+                setStreamStartTime(iso);
+                broadcast({ type: "grover-gang-countdown", time: iso });
                 setStartTimeSet(true);
               }}
               disabled={startTimeSet}
@@ -588,6 +590,7 @@ function DashboardContent() {
             <button
               onClick={() => {
                 clearStreamStartTime();
+                broadcast({ type: "grover-gang-countdown", time: "" });
                 setStartHour("7");
                 setStartMinute("00");
                 setStartPeriod("PM");
