@@ -57,22 +57,22 @@ export function WebcamFrame({
     };
   }, [cameraLabel]);
 
+  if (!cameraLabel) {
+    return null;
+  }
+
   return (
     <div className="rl-webcam">
       {/* Outer frame with clipped corners */}
       <div className="rl-webcam__frame">
         <div className="rl-webcam__inner">
-          {cameraLabel ? (
-            <video
-              ref={videoRef}
-              className="rl-webcam__video"
-              autoPlay
-              muted
-              playsInline
-            />
-          ) : (
-            <div className="rl-webcam__no-signal">NO CAM</div>
-          )}
+          <video
+            ref={videoRef}
+            className="rl-webcam__video"
+            autoPlay
+            muted
+            playsInline
+          />
         </div>
       </div>
 

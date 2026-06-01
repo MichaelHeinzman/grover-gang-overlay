@@ -31,18 +31,47 @@ interface OverlayConfig {
   username: string;
 }
 
+const EMPTY_CONFIG: OverlayConfig = {
+  clientId: "",
+  cameraLabel: "",
+  username: "",
+};
+
 function loadCachedConfig(): OverlayConfig {
+  if (typeof window === "undefined") {
+    return EMPTY_CONFIG;
+  }
+
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.OBS_CONFIG_CACHE);
     if (raw) return JSON.parse(raw) as OverlayConfig;
   } catch {
     /* ignore */
   }
-  return { clientId: "", cameraLabel: "", username: "" };
+  return EMPTY_CONFIG;
 }
 
 function saveCachedConfig(config: OverlayConfig) {
   localStorage.setItem(STORAGE_KEYS.OBS_CONFIG_CACHE, JSON.stringify(config));
+}
+
+function getInitialConfig(): OverlayConfig {
+  if (typeof window === "undefined") {
+    return EMPTY_CONFIG;
+  }
+
+  const cached = loadCachedConfig();
+  const params = new URLSearchParams(window.location.search);
+
+  return {
+    clientId:
+      cached.clientId ||
+      process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ||
+      localStorage.getItem(STORAGE_KEYS.CLIENT_ID) ||
+      "",
+    cameraLabel: cached.cameraLabel || params.get("cam") || "",
+    username: cached.username || params.get("user") || "",
+  };
 }
 
 // ── Overlay content (unchanged) ──
@@ -136,27 +165,7 @@ export default function OverlayPage() {
  */
 function OverlayConfigGate() {
   const { on } = useOBS();
-  const [config, setConfig] = useState<OverlayConfig | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  // Load fallback config on mount
-  useEffect(() => {
-    setMounted(true);
-
-    // Build fallback config: cached OBS config → URL params → env vars → localStorage
-    const cached = loadCachedConfig();
-    const params = new URLSearchParams(window.location.search);
-
-    const clientId =
-      cached.clientId ||
-      process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ||
-      localStorage.getItem(STORAGE_KEYS.CLIENT_ID) ||
-      "";
-    const cameraLabel = cached.cameraLabel || params.get("cam") || "";
-    const username = cached.username || params.get("user") || "";
-
-    setConfig({ clientId, cameraLabel, username });
-  }, []);
+  const [config, setConfig] = useState<OverlayConfig>(getInitialConfig);
 
   // Listen for live config updates from dashboard via OBS
   useEffect(() => {
@@ -174,7 +183,7 @@ function OverlayConfigGate() {
 
       setConfig((prev) => ({
         clientId: incoming.clientId || prev?.clientId || "",
-        cameraLabel: incoming.cameraLabel || prev?.cameraLabel || "",
+        cameraLabel: incoming.cameraLabel,
         username: incoming.username || prev?.username || "",
       }));
 
@@ -182,9 +191,7 @@ function OverlayConfigGate() {
     });
   }, [on]);
 
-  if (!mounted) return null;
-
-  const clientId = config?.clientId || "";
+  const clientId = config.clientId || "";
 
   if (!clientId) {
     return (
@@ -203,8 +210,8 @@ function OverlayConfigGate() {
     >
       <SceneManagerProvider>
         <OverlayContent
-          cameraLabel={config?.cameraLabel || undefined}
-          username={config?.username || undefined}
+          cameraLabel={config.cameraLabel || undefined}
+          username={config.username || undefined}
         />
       </SceneManagerProvider>
     </TwitchProvider>
