@@ -11,9 +11,15 @@ export function WebcamFrame({
   username?: string;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const normalizedCameraLabel = cameraLabel?.trim() ?? "";
+  const hasCamera =
+    normalizedCameraLabel.length > 0 &&
+    !["none", "no webcam", "no cam"].includes(
+      normalizedCameraLabel.toLowerCase(),
+    );
 
   useEffect(() => {
-    if (!cameraLabel) return;
+    if (!hasCamera) return;
 
     let stream: MediaStream | null = null;
     let cancelled = false;
@@ -23,7 +29,9 @@ export function WebcamFrame({
         // Enumerate devices to find one matching the label
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter((d) => d.kind === "videoinput");
-        const match = videoDevices.find((d) => d.label === cameraLabel);
+        const match = videoDevices.find(
+          (d) => d.label === normalizedCameraLabel,
+        );
 
         if (cancelled) return;
 
@@ -55,24 +63,24 @@ export function WebcamFrame({
         stream.getTracks().forEach((t) => t.stop());
       }
     };
-  }, [cameraLabel]);
+  }, [hasCamera, normalizedCameraLabel]);
+
+  if (!hasCamera) {
+    return null;
+  }
 
   return (
     <div className="rl-webcam">
       {/* Outer frame with clipped corners */}
       <div className="rl-webcam__frame">
         <div className="rl-webcam__inner">
-          {cameraLabel ? (
-            <video
-              ref={videoRef}
-              className="rl-webcam__video"
-              autoPlay
-              muted
-              playsInline
-            />
-          ) : (
-            <div className="rl-webcam__no-signal">NO CAM</div>
-          )}
+          <video
+            ref={videoRef}
+            className="rl-webcam__video"
+            autoPlay
+            muted
+            playsInline
+          />
         </div>
       </div>
 

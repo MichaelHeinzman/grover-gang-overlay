@@ -174,7 +174,7 @@ function OverlayConfigGate() {
 
       setConfig((prev) => ({
         clientId: incoming.clientId || prev?.clientId || "",
-        cameraLabel: incoming.cameraLabel || prev?.cameraLabel || "",
+        cameraLabel: incoming.cameraLabel,
         username: incoming.username || prev?.username || "",
       }));
 
